@@ -8,17 +8,18 @@ import registration as reg
 from IPython.display import display, clear_output
 
 
-def intensity_based_registration_demo():
+def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_1_t1_d.tif'):
 
     # read the fixed and moving images
     # change these in order to read different images
-    I = plt.imread('../data/image_data/1_1_t1.tif')
-    Im = plt.imread('../data/image_data/1_1_t1_d.tif')
+    I = plt.imread(I_path)
+    Im = plt.imread(Im_path)
 
     # initial values for the parameters
     # we start with the identity transformation
     # most likely you will not have to change these
     x = np.array([0., 0., 0.])
+    x=np.transpose(x)       #toegevoegd...
 
     # NOTE: for affine registration you have to initialize
     # more parameters and the scaling parameters should be
@@ -30,7 +31,7 @@ def intensity_based_registration_demo():
     # are fixed and the only remaining parameter is the vector x with the
     # parameters of the transformation
     fun = lambda x: reg.rigid_corr(I, Im, x, return_transform=False)
-
+    
     # the learning rate
     mu = 0.001
 
