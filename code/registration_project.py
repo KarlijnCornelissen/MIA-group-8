@@ -19,7 +19,7 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
     # we start with the identity transformation
     # most likely you will not have to change these
     x = np.array([0., 0., 0.])
-    x=np.transpose(x)       #toegevoegd...
+    # x=np.transpose(x)       #toegevoegd...
 
     # NOTE: for affine registration you have to initialize
     # more parameters and the scaling parameters should be
@@ -40,6 +40,9 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
 
     iterations = np.arange(1, num_iter+1)
     similarity = np.full((num_iter, 1), np.nan)
+
+    print('first plot')
+
 
     fig = plt.figure(figsize=(14,6))
 
@@ -64,11 +67,14 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
     ax2.set_ylabel('Similarity')
     ax2.grid()
 
+    print('starting updates')
+
     # perform 'num_iter' gradient ascent updates
     for k in np.arange(num_iter):
 
         # gradient ascent
         g = reg.ngradient(fun, x)
+        print(g)
         x += g*mu
 
         # for visualization of the result

@@ -366,10 +366,11 @@ def ngradient(fun, x, h=1e-3):
     # for xi in range(len(x)):
     #     g[xi]=(fun(x[xi]+h/2)-fun(x[xi]-h/2))/h
     #------------------
+    
     for xi in range(len(x)):
-        a=x[:]
+        a=x.copy()
         a[xi]+=h/2
-        b=x[:]
+        b=x.copy()
         b[xi]-=h/2
         g[xi] = (fun(a)-fun(b))/h
 
