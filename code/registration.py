@@ -362,11 +362,7 @@ def ngradient(fun, x, h=1e-3):
     # TODO: Implement the  computation of the partial derivatives of
     # the function at x with numerical differentiation.
     # g[k] should store the partial derivative w.r.t. the k-th parameter
-    #--------old version:
-    # for xi in range(len(x)):
-    #     g[xi]=(fun(x[xi]+h/2)-fun(x[xi]-h/2))/h
-    #------------------
-    
+        
     for xi in range(len(x)):
         a=x.copy()
         a[xi]+=h/2
@@ -446,8 +442,8 @@ def affine_corr(I, Im, x, return_transform=True):
     #------------------------------------------------------------------#
     # TODO: Implement the missing functionality
     T1 = rotate(x[0])                                 #rotate
-    T2 = np.array([x[1],0],[0,x[2]]).dot(T1)          #scale
-    T3 = np.array([1,x[3]],[x[4],1]).dot(T2)          #shear
+    T2 = np.array([[x[1],0],[0,x[2]]]).dot(T1)          #scale
+    T3 = np.array([[1,x[3]],[x[4],1]]).dot(T2)          #shear
     Th = util.t2h(T3, x[5:]*SCALING)                  #translation
     
     # transform the moving image
@@ -482,25 +478,27 @@ def affine_mi(I, Im, x, return_transform=True):
     # Im_t - transformed moving image T(Im)
     # Th - transformation matrix (only returned if return_transform=True)
 
-    NUM_BINS = 64
+    NUM_BINS = 40           #64
     SCALING = 100
     
     #------------------------------------------------------------------#
     # TODO: Implement the missing functionality
     T1 = rotate(x[0])                                 #rotate
-    T2 = np.array([x[1],0],[0,x[2]]).dot(T1)          #scale
-    T3 = np.array([1,x[3]],[x[4],1]).dot(T2)          #shear
+    T2 = np.array([[x[1],0],[0,x[2]]]).dot(T1)          #scale
+    T3 = np.array([[1,x[3]],[x[4],1]]).dot(T2)          #shear
     Th = util.t2h(T3, x[5:]*SCALING)                  #translation
     
+  
     # transform the moving image
     Im_t, Xt = image_transform(Im, Th)
     
     
     p = joint_histogram(I, Im_t, num_bins=NUM_BINS, minmax_range=None)
-    mutual_information(p)
+    MI = mutual_information(p)
+   
     #------------------------------------------------------------------#
 
     if return_transform:
-        return C, Im_t, Th
+        return MI, Im_t, Th
     else:
-        return C
+        return MI
