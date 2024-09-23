@@ -8,17 +8,24 @@ import registration as reg
 from IPython.display import display, clear_output
 
 
-def intensity_based_registration_demo():
+
+def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
+                                      mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
 
     # read the fixed and moving images
     # change these in order to read different images
-    I = plt.imread('../data/image_data/1_1_t1.tif')
-    Im = plt.imread('../data/image_data/1_1_t1_d.tif')
+    I = plt.imread(I_path)
+    Im = plt.imread(Im_path)
 
+    if rigid:
     # initial values for the parameters
     # we start with the identity transformation
     # most likely you will not have to change these
-    x = np.array([0., 0., 0.])
+        x = np.array([0., 0., 0.])
+        assert corr_metric == "CC", "combination of rigid transformation and MI correlation metric not available."
+        fun = lambda x: reg.rigid_corr(I, Im, x, return_transform=False)
+
+    
 
     # NOTE: for affine registration you have to initialize
     # more parameters and the scaling parameters should be
@@ -29,16 +36,27 @@ def intensity_based_registration_demo():
     # in which the first two input parameters (fixed and moving image)
     # are fixed and the only remaining parameter is the vector x with the
     # parameters of the transformation
-    fun = lambda x: reg.rigid_corr(I, Im, x, return_transform=False)
+        
+    
+    elif rigid == False:
+        x = np.array([0., 1., 1., 0., 0., 0., 0.,])
+        if corr_metric =="CC":
+            fun = lambda x: reg.affine_corr(I, Im, x, return_transform=False)
+    
+        elif corr_metric == "MI":
+            fun = lambda x: reg.affine_mi(I, Im, x, return_transform=False)
 
-    # the learning rate
-    mu = 0.001
+    # # the learning rate
+    # mu = 0.00052#0.002
 
-    # number of iterations
-    num_iter = 200
+    # # number of iterations
+    # num_iter = 150#200
 
     iterations = np.arange(1, num_iter+1)
     similarity = np.full((num_iter, 1), np.nan)
+
+    
+
 
     fig = plt.figure(figsize=(14,6))
 
@@ -48,7 +66,7 @@ def intensity_based_registration_demo():
     # fixed image
     im1 = ax1.imshow(I)
     # moving image
-    im2 = ax1.imshow(I, alpha=0.7)
+    im2 = ax1.imshow(Im, alpha=0.7)
     # parameters
     txt = ax1.text(0.3, 0.95,
         np.array2string(x, precision=5, floatmode='fixed'),
@@ -63,15 +81,26 @@ def intensity_based_registration_demo():
     ax2.set_ylabel('Similarity')
     ax2.grid()
 
+    
+
     # perform 'num_iter' gradient ascent updates
     for k in np.arange(num_iter):
 
         # gradient ascent
         g = reg.ngradient(fun, x)
+        print(g)
+        
         x += g*mu
-
         # for visualization of the result
-        S, Im_t, _ = reg.rigid_corr(I, Im, x, return_transform=True)
+        if rigid:
+            S, Im_t, _ = reg.rigid_corr(I, Im, x, return_transform=True)
+
+        if rigid==False:
+            if corr_metric == "MI":    
+                S, Im_t, _ = reg.affine_mi(I, Im, x, return_transform=True)
+
+            elif corr_metric == "CC":
+                S, Im_t, _ = reg.affine_corr(I, Im, x, return_transform=True)
 
         clear_output(wait = True)
 
@@ -84,3 +113,15 @@ def intensity_based_registration_demo():
         learning_curve.set_ydata(similarity)
 
         display(fig)
+
+
+def add_noice(img_path):
+    img = plt.imread(img_path)
+    mean = 0
+    sigma = 3
+
+    gaussian = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
+
+    noisy_image = img + gaussian
+
+    return noisy_image
