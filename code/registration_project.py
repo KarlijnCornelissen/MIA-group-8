@@ -8,6 +8,7 @@ import registration as reg
 from IPython.display import display, clear_output
 
 
+
 def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
                                       mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
 
@@ -112,3 +113,15 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
         learning_curve.set_ydata(similarity)
 
         display(fig)
+
+
+def add_noice(img_path):
+    img = plt.imread(img_path)
+    mean = 0
+    sigma = 3
+
+    gaussian = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
+
+    noisy_image = img + gaussian
+
+    return noisy_image
