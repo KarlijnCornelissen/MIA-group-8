@@ -115,10 +115,14 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
         display(fig)
 
 
-def add_noice(img_path):
+def add_noice(img_path, high=False):
     img = plt.imread(img_path)
-    mean = 0
-    sigma = 3
+    if high == True:
+        mean = 0
+        sigma = 10
+    elif high == False:
+        mean = 0
+        sigma = 3
 
     gaussian = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
 
