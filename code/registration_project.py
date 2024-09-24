@@ -7,6 +7,14 @@ import matplotlib.pyplot as plt
 import registration as reg
 from IPython.display import display, clear_output
 
+#TODO: terminate als er maar weinig verandering is in de cost function. 
+#TODO: gaande weg hogere mu kiezen...
+#TODO: images genereren met noise
+#TODO: functie schrijven voor "noice-canccelling"
+#TODO: print eind transformatie
+#TODO: verschil afbeelding
+#TODO: pointbased
+
 
 
 def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
@@ -129,4 +137,3 @@ def add_noice(img_path, high=False):
     noisy_image = img + gaussian
 
     return noisy_image
-
