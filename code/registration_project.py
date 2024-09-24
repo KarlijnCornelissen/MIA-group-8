@@ -125,3 +125,4 @@ def add_noice(img_path):
     noisy_image = img + gaussian
 
     return noisy_image
+
