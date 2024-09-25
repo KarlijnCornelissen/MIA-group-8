@@ -129,7 +129,7 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
         similarity[k] = S
         learning_curve.set_ydata(similarity)
 
-        if k>0 and abs(similarity[k]-similarity[k-1])<threshold:
+        if k>20 and abs(similarity[k]-similarity[k-1])<threshold:
             small_change_count += 1
             #print(f"Small change detected at iteration {k}, count: {small_change_count}")
         else:
@@ -140,6 +140,7 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
             break
         
         display(fig)
+    return Im_t, x, S
 
 
 def add_noise(img_path, high=False):
@@ -170,4 +171,8 @@ def noise_filtering(img):
     cv.destroyAllWindows()
     return gaussian_filter, gaussian_filter_ski
     
-    
+def difference_images(img1, img2):
+    im_moving, x, S = intensity_based_registration_demo(img1, img2)
+    diff = img1 - im_moving
+    plt.imshow(diff)
+    return diff
