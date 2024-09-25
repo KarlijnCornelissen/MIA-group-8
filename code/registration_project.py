@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import registration as reg
 from IPython.display import display, clear_output
 
-import cv2
+import cv2 as cv
 from skimage.filters import gaussian
 
 #TODO: terminate als er maar weinig verandering is in de cost function. 
@@ -156,15 +156,15 @@ def add_noice(img_path, high=False):
 
     return noisy_image
 
-def noise_filtering(img_path):
-    img = plt.imread(img_path)
-    #two ways, cv2 of skimage
-    gaussian_filter = cv2.GaussianBlur(img, (5,5), 0, borderType=cv2.BORDER_CONSTANT)
+def noise_filtering(img):
+    #img = plt.imread(img_path)
+    #two ways, cv of skimage
+    gaussian_filter = cv.GaussianBlur(img, (5,5), 0, borderType=cv.BORDER_CONSTANT)
     gaussian_filter_ski = gaussian(img, sigma=1, mode='constant', cval=0.0)
 
-    cv2.imshow("Original", img)
-    cv2.imshow("Gaussian 1", gaussian_filter)
-    cv2.imshow("Gaussian 2", gaussian_filter_ski)
+    cv.imshow("Original", img)
+    cv.imshow("Gaussian 1", gaussian_filter)
+    cv.imshow("Gaussian 2", gaussian_filter_ski)
     return gaussian_filter
     
     
