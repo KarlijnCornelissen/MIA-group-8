@@ -19,13 +19,15 @@ from skimage.filters import gaussian
 
 
 
-def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
-                                      mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
+def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
+
+    # intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
+    #                                   mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
 
     # read the fixed and moving images
     # change these in order to read different images
-    I = plt.imread(I_path)
-    Im = plt.imread(Im_path)
+    # I = plt.imread(I_path)
+    # Im = plt.imread(Im_path)
 
     if rigid:
     # initial values for the parameters
