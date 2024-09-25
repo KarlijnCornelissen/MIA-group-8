@@ -12,7 +12,6 @@ from skimage.filters import gaussian
 
 #TODO: terminate als er maar weinig verandering is in de cost function. 
 #TODO: gaande weg hogere mu kiezen...
-#TODO: images genereren met noise
 #TODO: functie schrijven voor "noice-canccelling"
 #TODO: print eind transformatie
 #TODO: verschil afbeelding
@@ -141,7 +140,7 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
         display(fig)
 
 
-def add_noice(img_path, high=False):
+def add_noise(img_path, high=False):
     img = plt.imread(img_path)
     if high == True:
         mean = 0
@@ -165,6 +164,8 @@ def noise_filtering(img):
     cv.imshow("Original", img)
     cv.imshow("Gaussian 1", gaussian_filter)
     cv.imshow("Gaussian 2", gaussian_filter_ski)
-    return gaussian_filter
+    cv.waitKey(0)  # Wait for a key press
+    cv.destroyAllWindows()
+    return gaussian_filter, gaussian_filter_ski
     
     
