@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import registration as reg
 from IPython.display import display, clear_output
 
-import cv2 as cv
+#import cv2 as cv
 from skimage.filters import gaussian
 
 #TODO: terminate als er maar weinig verandering is in de cost function. 
