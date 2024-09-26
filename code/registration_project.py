@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 import registration as reg
 from IPython.display import display, clear_output
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 #import cv2 as cv
-=======
->>>>>>> 7ebe69c51067b9879b520804769b11be6aeed489
+#=======
+#>>>>>>> 7ebe69c51067b9879b520804769b11be6aeed489
 from skimage.filters import gaussian
 
 
@@ -75,35 +75,35 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
     
 
 
-    fig = plt.figure(figsize=(14,6))
+    # fig = plt.figure(figsize=(14,6))
 
-    # fixed and moving image, and parameters
-    ax1 = fig.add_subplot(121)
+    # # fixed and moving image, and parameters
+    # ax1 = fig.add_subplot(121)
 
-    # fixed image
-    im1 = ax1.imshow(I)
-    # moving image
-    im2 = ax1.imshow(Im, alpha=0.7)
-    # parameters
-    txt = ax1.text(0, 0.95,
-        np.array2string(x, precision=5, floatmode='fixed'),
-        bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
-        transform=ax1.transAxes)
+    # # fixed image
+    # im1 = ax1.imshow(I)
+    # # moving image
+    # im2 = ax1.imshow(Im, alpha=0.7)
+    # # parameters
+    # txt = ax1.text(0, 0.95,
+    #     np.array2string(x, precision=5, floatmode='fixed'),
+    #     bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
+    #     transform=ax1.transAxes)
     
-    #more parameters(mu and S):
-    txt2 = ax1.text(0, 0," ",
-        bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
-        transform=ax1.transAxes)
+    # #more parameters(mu and S):
+    # txt2 = ax1.text(0, 0," ",
+    #     bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
+    #     transform=ax1.transAxes)
 
 
 
-    # 'learning' curve
-    ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1))
+    # # 'learning' curve
+    # ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1))
 
-    learning_curve, = ax2.plot(iterations, similarity, lw=2)
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('Similarity')
-    ax2.grid()
+    # learning_curve, = ax2.plot(iterations, similarity, lw=2)
+    # ax2.set_xlabel('Iteration')
+    # ax2.set_ylabel('Similarity')
+    # ax2.grid()
 
     
     # Define threshold for small changes
@@ -135,16 +135,16 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
         clear_output(wait = True)
 
         # update moving image and parameters
-        im2.set_data(Im_t)
-        txt.set_text(np.array2string(x, precision=5, floatmode='fixed'))
+        # im2.set_data(Im_t)
+        # txt.set_text(np.array2string(x, precision=5, floatmode='fixed'))
 
-        #display mu and S parameters:
-        txt2.set_text(f"mu={mu} and S = {float(S)}")
+        # #display mu and S parameters:
+        # txt2.set_text(f"mu={mu} and S = {float(S)}")
 
         # update 'learning' curve
         similarity[k] = S
-        learning_curve.set_ydata(similarity)
-        ax2.set_xlim(xmin=1, xmax=k)
+        #learning_curve.set_ydata(similarity)
+        # ax2.set_xlim(xmin=1, xmax=k)
 
         #terminate early:
         if k>20 and abs(similarity[k]-similarity[k-1])<threshold:        
@@ -158,7 +158,7 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
             break
 
         
-        display(fig)
+        # display(fig)
     return Im_t, x, S
 
 
@@ -184,9 +184,9 @@ def add_noise(img_path, T, high=False):
 
     return noisy_image
 
-def noise_filtering(img):
+def noise_filtering(img,sigma=1):
     """	Function to filter noise from an image using a Gaussian filter."""	
-    gaussian_filter = gaussian(img, sigma=1, mode='constant', cval=0.0)     
+    gaussian_filter = gaussian(img, sigma=sigma, mode='constant', cval=0.0)     
 
     return  gaussian_filter
     
