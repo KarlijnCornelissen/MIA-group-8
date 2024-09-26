@@ -117,7 +117,7 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
            
         # gradient ascent
         g = reg.ngradient(fun, x)
-        print(g)
+        #print(g)
         
         mu = lr_exp_decay(initial_learning_rate, itteration=k)
         x += g*mu
@@ -154,7 +154,7 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
             small_change_count = 0  # Reset the count if the change is large enough
 
         if small_change_count >= max_small_change_iters:
-            print(f"Terminating early at iteration {k} due to small change for {max_small_change_iters} consecutive iterations.")
+            #print(f"Terminating early at iteration {k} due to small change for {max_small_change_iters} consecutive iterations.")
             break
 
         
