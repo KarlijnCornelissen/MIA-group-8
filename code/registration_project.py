@@ -143,14 +143,21 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
     return Im_t, x, S
 
 
-def add_noise(img_path, high=False):
+def add_noise(img_path, T, high=False):
     img = plt.imread(img_path)
-    if high == True:
-        mean = 0
-        sigma = 9               # gevonden in een bron
-    elif high == False:
-        mean = 0
-        sigma = 4.2             # gevonden in een bron
+    mean = 0
+    if T == "T1":
+        if high == True:
+            sigma = 12.6            # gevonden in een bron
+        elif high == False:
+            sigma = 4.2             # gevonden in een bron
+    elif T == "T2":
+        if high == True:
+            sigma = 16.2            # gevonden in een bron
+        elif high == False:
+            sigma = 5.4             # gevonden in een bron
+    else:
+        print("Invalid T value")
 
     gaussian = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
 
