@@ -478,7 +478,7 @@ def affine_mi(I, Im, x, return_transform=True):
     # Im_t - transformed moving image T(Im)
     # Th - transformation matrix (only returned if return_transform=True)
 
-    NUM_BINS = 40           #64
+    NUM_BINS = 16           #64
     SCALING = 100
     
     #------------------------------------------------------------------#

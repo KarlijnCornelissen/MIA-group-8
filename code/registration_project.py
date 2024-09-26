@@ -7,22 +7,27 @@ import matplotlib.pyplot as plt
 import registration as reg
 from IPython.display import display, clear_output
 
+<<<<<<< HEAD
 #import cv2 as cv
+=======
+>>>>>>> 7ebe69c51067b9879b520804769b11be6aeed489
 from skimage.filters import gaussian
 
-#TODO: terminate als er maar weinig verandering is in de cost function. 
-#TODO: gaande weg hogere mu kiezen...
+
+
 #TODO: functie schrijven voor "noice-canccelling"
-#TODO: print eind transformatie
+
 #TODO: verschil afbeelding
 #TODO: pointbased
+#TODO: functie maken van terminate early. 
 
+import math
 
+def lr_exp_decay(initial_learning_rate, itteration):
+    k = 0.09
+    return initial_learning_rate * math.exp(-k * itteration)
 
-def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
-
-    # intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
-    #                                   mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
+def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_iter = 150, rigid=True, corr_metric="CC"): #mu=0.0005
 
     # read the fixed and moving images
     # change these in order to read different images
@@ -80,10 +85,17 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
     # moving image
     im2 = ax1.imshow(Im, alpha=0.7)
     # parameters
-    txt = ax1.text(0.3, 0.95,
+    txt = ax1.text(0, 0.95,
         np.array2string(x, precision=5, floatmode='fixed'),
         bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
         transform=ax1.transAxes)
+    
+    #more parameters(mu and S):
+    txt2 = ax1.text(0, 0," ",
+        bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
+        transform=ax1.transAxes)
+
+
 
     # 'learning' curve
     ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1))
@@ -95,8 +107,8 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
 
     
     # Define threshold for small changes
-    threshold = 1e-5  # Small value for determining minimal change
-    max_small_change_iters = 3  # The number of small change iterations needed to break
+    threshold = 5e-3  # Small value for determining minimal change
+    max_small_change_iters = 8  # The number of small change iterations needed to break
     small_change_count = 0  # Counter for consecutive small changes
     
 
@@ -107,6 +119,7 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
         g = reg.ngradient(fun, x)
         print(g)
         
+        mu = lr_exp_decay(initial_learning_rate, itteration=k)
         x += g*mu
         # for visualization of the result
         if rigid:
@@ -125,11 +138,16 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
         im2.set_data(Im_t)
         txt.set_text(np.array2string(x, precision=5, floatmode='fixed'))
 
+        #display mu and S parameters:
+        txt2.set_text(f"mu={mu} and S = {float(S)}")
+
         # update 'learning' curve
         similarity[k] = S
         learning_curve.set_ydata(similarity)
+        ax2.set_xlim(xmin=1, xmax=k)
 
-        if k>20 and abs(similarity[k]-similarity[k-1])<threshold:
+        #terminate early:
+        if k>20 and abs(similarity[k]-similarity[k-1])<threshold:        
             small_change_count += 1
             #print(f"Small change detected at iteration {k}, count: {small_change_count}")
         else:
@@ -138,6 +156,7 @@ def intensity_based_registration_demo(I, Im, mu=0.0005, num_iter = 150, rigid=Tr
         if small_change_count >= max_small_change_iters:
             print(f"Terminating early at iteration {k} due to small change for {max_small_change_iters} consecutive iterations.")
             break
+
         
         display(fig)
     return Im_t, x, S
