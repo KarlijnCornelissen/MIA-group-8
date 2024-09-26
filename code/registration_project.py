@@ -16,7 +16,7 @@ from skimage.filters import gaussian
 
 
 #TODO: functie schrijven voor "noice-canccelling"
-
+#TODO: variabelen en functie namen fixen
 #TODO: verschil afbeelding
 #TODO: pointbased
 #TODO: functie maken van terminate early. 
@@ -160,7 +160,9 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
         
         # display(fig)
     return Im_t, x, S
-
+    	#Im_t= Transformed moving Image
+        #S= scalar NCC of MI
+        #x=array van 0en en 1en
 
 def add_noise(img_path, T, high=False):
     img = plt.imread(img_path)
