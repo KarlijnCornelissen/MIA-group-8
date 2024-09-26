@@ -166,17 +166,10 @@ def add_noise(img_path, T, high=False):
     return noisy_image
 
 def noise_filtering(img):
-    #img = plt.imread(img_path)
-    #two ways, cv of skimage
-    gaussian_filter = cv.GaussianBlur(img, (5,5), 0, borderType=cv.BORDER_CONSTANT)
-    gaussian_filter_ski = gaussian(img, sigma=1, mode='constant', cval=0.0)
+    """	Function to filter noise from an image using a Gaussian filter."""	
+    gaussian_filter = gaussian(img, sigma=1, mode='constant', cval=0.0)     
 
-    cv.imshow("Original", img)
-    cv.imshow("Gaussian 1", gaussian_filter)
-    cv.imshow("Gaussian 2", gaussian_filter_ski)
-    cv.waitKey(0)  # Wait for a key press
-    cv.destroyAllWindows()
-    return gaussian_filter, gaussian_filter_ski
+    return  gaussian_filter
     
 def difference_images(img1, img2):
     im_moving, x, S = intensity_based_registration_demo(img1, img2)
