@@ -10,9 +10,9 @@ from IPython.display import display, clear_output
 from skimage.filters import gaussian
 
 
-#TODO: gaande weg hogere mu kiezen...
+
 #TODO: functie schrijven voor "noice-canccelling"
-#TODO: print eind transformatie
+
 #TODO: verschil afbeelding
 #TODO: pointbased
 #TODO: functie maken van terminate early. 
@@ -135,7 +135,7 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
         txt.set_text(np.array2string(x, precision=5, floatmode='fixed'))
 
         #display mu and S parameters:
-        txt2.set_text(f"mu={mu} and S = {S}")
+        txt2.set_text(f"mu={mu} and S = {float(S)}")
 
         # update 'learning' curve
         similarity[k] = S
@@ -143,7 +143,7 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
         ax2.set_xlim(xmin=1, xmax=k)
 
         #terminate early:
-        if k>20 and abs(similarity[k]-similarity[k-1])<threshold:        #similarity[k]-similarity[k-1] vervangen voor g
+        if k>20 and abs(similarity[k]-similarity[k-1])<threshold:        
             small_change_count += 1
             #print(f"Small change detected at iteration {k}, count: {small_change_count}")
         else:
