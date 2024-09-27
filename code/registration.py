@@ -197,7 +197,7 @@ def correlation(I, J):
     # This can be done with a single line of code, but you can use for-loops instead.
     uT=np.transpose(u)
     vT=np.transpose(v)
-    CC = (uT.dot(v))/(((uT.dot(u))**0.5)*((vT.dot(v))**0.5))
+    CC = float((uT.dot(v))/(((uT.dot(u))**0.5)*((vT.dot(v))**0.5)))
 #     print("start")
 #     print(uT.dot(v))
 #     print(((uT.dot(u))**0.5)*((vT.dot(v))**0.5))
