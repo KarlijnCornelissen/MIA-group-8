@@ -4,6 +4,9 @@ from registration_project import *
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from pytictoc import TicToc
+t = TicToc() #create instance of class
+
 def run_all(corr_metric="CC"):
     """ 
     Processes T1 and T2 images for multiple patients and slices to calculate similarity measures 
@@ -36,12 +39,12 @@ def run_all(corr_metric="CC"):
     for patient in range(1,4):
         Patients_dict[patient]={}
         for slice in range(1,4):
+            t.tic() #Start timer
             Patients_dict[patient][slice]=[]
             image_dict = {}
-            # image_dict.clear
             # Load the original T1 and T2 images, for the current patient and slice
-            image_dict["I"] = plt.imread(f"image_data/{patient}_{slice}_t1.tif") #deleted: MIA-group-8/code
-            image_dict["Im"] = plt.imread(f"image_data/{patient}_{slice}_t2.tif")
+            image_dict["I"] = plt.imread(f"MIA-group-8/code/image_data/{patient}_{slice}_t1.tif") #added again: MIA-group-8/code
+            image_dict["Im"] = plt.imread(f"MIA-group-8/code/image_data/{patient}_{slice}_t2.tif")
             
             # Add noise to the images with high and low noise levels.
             image_dict["noise_high_i"] = add_noise(image_dict["I"], 'T1', True) #High noise for T1
@@ -49,7 +52,7 @@ def run_all(corr_metric="CC"):
             image_dict["noise_low_i"] = add_noise(image_dict["I"], 'T1', False) #Low noise for T1
             image_dict["noise_low_Im"] = add_noise(image_dict["Im"], 'T2',False) #Low noise for T2
 
-            #Voor nu bij filteren gebruiken we even zelfde sigma als eroverheen gezet is
+           
             # Apply Gaussian filtering to the noisy images with specified sigma values.
             image_dict["filtered_high_ski"] = noise_filtering(image_dict["noise_high_i"], sigma=12.6) #High sigma filter T1
             image_dict["filtered_high_ski_Im"] = noise_filtering(image_dict["noise_high_Im"], sigma=16.2) #High sigma filter T2
@@ -61,21 +64,42 @@ def run_all(corr_metric="CC"):
                 mu=0.05
             else: 
                 mu=0.01
-            # Perform intensity-based registration to compute transformation matrices.
+            
             for i in range(0,10,2):
+                # Perform intensity-based registration to compute transformation matrices:
                 _, T, _ = intensity_based_registration_demo(image_dict[keys[i]],image_dict[keys[i+1]], initial_learning_rate=mu,
                                                             rigid=False,corr_metric=corr_metric,Plot=False)
+                
+                #choose the similarity metric that was given:
+                    #apply transformation to original images, to obtain the Similarity values. 
+                    #place these values immediately in the patiens_dict dictionary.
                 if corr_metric == "MI":    
                     Patients_dict[patient][slice].append(float(reg.affine_mi(image_dict["I"], image_dict["Im"], T,return_transform=False)))
 
                 elif corr_metric == "CC":                    
                     Patients_dict[patient][slice].append(float(reg.affine_corr(image_dict["I"], image_dict["Im"], T,return_transform=False)))
+
+            #keep track of progress:
+            t.toc() #Time elapsed since t.tic()
             print(f"{(patient-1)*3+slice} out of {9} completed!")
     
     return Patients_dict
     
 
 def save_data_to_csv(method="CC"):
+    """ run the function run_all, and save the result to a csv file.
+    
+    you only have to run this function once, after that, you can collect the data using:
+    "...
+    df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv",index_col=[0,1])
+    df_MI = pd.read_csv("MIA-group-8\code\MI_data.csv",index_col=[0,1])
+    print(df_CC)
+    print(df_MI)
+    ..."
+
+    args:
+        - method(str): CC or MI
+    """
 
     Data=run_all(method)
     print(Data)
@@ -83,8 +107,12 @@ def save_data_to_csv(method="CC"):
     df = pd.concat(dict_of_df, axis=0)
     print(df)
 
-    df.to_csv("MIA-group-8\code\{method}_data.csv")
+    df.to_csv(f"MIA-group-8\code\{method}_data.csv")
     
+# save_data_to_csv("CC")
+save_data_to_csv("MI")
 
-df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv",index_col=[0,1])
-print(df_CC)
+# df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv",index_col=[0,1])
+# df_MI = pd.read_csv("MIA-group-8\code\MI_data.csv",index_col=[0,1])
+# print(df_CC)
+# print(df_MI)

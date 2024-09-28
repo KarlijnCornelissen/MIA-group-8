@@ -190,7 +190,7 @@ def add_noise(img, T, high=False):
 
     gaussian_noise = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
 
-    noisy_image = img + gaussian
+    noisy_image = img + gaussian_noise
 
     return noisy_image
 
