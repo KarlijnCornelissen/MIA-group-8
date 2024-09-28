@@ -9,9 +9,6 @@ from IPython.display import display, clear_output
 from skimage.filters import gaussian
 import math
 
-#<<<<<<< HEAD
-#>>>>>>> 7ebe69c51067b9879b520804769b11be6aeed489
-
 #TODO: variabelen en functie namen fixen
 #TODO: pointbased
 
@@ -19,11 +16,41 @@ import math
 
 
 def lr_exp_decay(initial_learning_rate, itteration):
+    """
+    Implementing exponential decay for learning rate.
+    
+    Input:
+        initial_learning_rate : The starting learning rate (float)
+        iteration : The current iteration (or step) of training (int)
+        
+    Output:
+        new_learning_rate : The updated learning rate after applying exponential decay (float)
+    """
     k = 0.3
-    return initial_learning_rate * math.exp(-k * itteration)
+    new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
+    return new_learning_rate
 
 def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_iter = 150, rigid=True, corr_metric="CC", Plot=True): #mu=0.0005
+    """
+    Performs an intensity-based image registration using gradient ascent optimization.
+    The function aligns two images, `I` (fixed) and `Im` (moving), using either rigid or affine transformation.
+    The transformation is optimized using a correlation-based metric (Cross-Correlation or Mutual Information)
+    and gradient ascent, with a learning rate controlled by exponential decay.
 
+    Input:
+        I : the fixed image to which the moving image will be alligned (np.ndarray)
+        Im : the moving image that will be transformed and alligned to the fixed image (np.ndarray)
+        initial_learning_rate : the initial learning rate for gradient ascent, default is 0.01 (float)
+        num_iter : the number of iterations for the optimization process, default is 150 (int)
+        rigid : determines the kind of transformation, if true than rigid, if false than affine, default is true (bool)
+        corr_metric : the correlation metrix used to optimize, cross correlation (CC) or mutual information (MI) (string)
+        plot: if true, displays real-time plots of the registration process, showing the moving image overlay and the learning curve, default is true (bool)
+
+    Output: 
+        Im_t : the transformed image after registration (np.ndarray)
+        x : the optimized transformation parameters (np.ndarray)
+        similarity: the final similarity score (CC or MI) between fixed and transformed moving images (float)
+    """
     if rigid:
     # initial values for the parameters
         x = np.array([0., 0., 0.])
@@ -136,41 +163,60 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
     	
 
 def add_noise(img, T, high=False):
-    """This function adds noise to a given image. 
-    params:
-        -img(array): The image without noise
-        -T(string): T1 or T2
-        -high(Boolean): determines amount of noise added to the image
+    """This function adds normally distributed noise to a given image. The sigma differs from T1 and T2 images, this is why this is added differently
+    
+    Input:
+        -img : The image without noise (np.ndarray)
+        -T : T1 or T2 (str)
+        -high: determines amount of noise added to the image,  if true, a higher level of noise is added to the image, if false, a lower level of noise is               added (bool)
         
-    Returns:
-        noisy_image(array): the given image with added noise.
+    Output:
+        noisy_image(array): the given image with added Gaussian noise
     """
     #img = plt.imread(img_path)
     mean = 0
     if T == "T1":
         if high == True:
-            sigma = 12.6            # gevonden in een bron
+            sigma = 12.6            #Value from research, 'Noise estimation in single coil MR images'
         elif high == False:
-            sigma = 4.2             # gevonden in een bron
+            sigma = 4.2             #Value from research, 'Noise estimation in single coil MR images'
     elif T == "T2":
         if high == True:
-            sigma = 16.2            # gevonden in een bron
+            sigma = 16.2            #Value from research, 'Noise estimation in single coil MR images'
         elif high == False:
-            sigma = 5.4             # gevonden in een bron
+            sigma = 5.4             #Value from research, 'Noise estimation in single coil MR images'
     else:
         print("Invalid T value")
 
-    gaussian = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
+    gaussian_noise = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
 
     noisy_image = img + gaussian
 
     return noisy_image
 
 def noise_filtering(img,sigma=1):
-    """	Function to filter noise from an image using a Gaussian filter."""	
-    return  gaussian(img, sigma=sigma, mode='constant', cval=0.0)
+    """Filters noise from an image using a Gaussian filter.
+
+    Input:
+        img : the noisy image to be filtered (np.ndarray)
+        sigma : standard deviation of the Gaussian filter can be chosen accordingly, a larger value results in a smoother image (float)
+                         
+    Output:
+        filtered_image : the image after applying the Gaussian filter (np.ndarray)
+    """	
+    filtered_image = gaussian(img, sigma=sigma, mode='constant', cval=0.0)
+    return  filtered_image
     
 def difference_images(img1, img2):
+    """Calculates the difference between two images after performing intensity-based registration.
+
+    Input:
+        img1 : the first image, reference image 
+        img2 : the second image, moving image, to be registered to img1 (np.ndarray)
+        
+    Output:
+        diff : the difference image showing the pixel-wise difference between img1 and the registered img2 (array)
+    """
     im_moving, x, S = intensity_based_registration_demo(img1, img2)
     diff = img1 - im_moving
     plt.imshow(diff)

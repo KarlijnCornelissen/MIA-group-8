@@ -2,7 +2,6 @@ import sys
 
 from registration_project import *
 import matplotlib.pyplot as plt
-import pandas as pd
 
 def run_all(corr_metric="CC"):
     """ 
@@ -58,9 +57,9 @@ def run_all(corr_metric="CC"):
 
             keys=list(image_dict.keys())
             if patient==3:
-                mu=0.05
+                mu=0.5
             else: 
-                mu=0.01
+                mu=0.1
             # Perform intensity-based registration to compute transformation matrices.
             for i in range(0,10,2):
                 _, T, _ = intensity_based_registration_demo(image_dict[keys[i]],image_dict[keys[i+1]], initial_learning_rate=mu,
@@ -75,16 +74,7 @@ def run_all(corr_metric="CC"):
     return Patients_dict
     
 
-def save_data_to_csv(method="CC"):
-
-    Data=run_all(method)
-    print(Data)
-    dict_of_df = {k: pd.DataFrame.from_dict(v,orient="index") for k,v in Data.items()}
-    df = pd.concat(dict_of_df, axis=0)
-    print(df)
-
-    df.to_csv("MIA-group-8\code\{method}_data.csv")
-    
-
-df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv",index_col=[0,1])
-print(df_CC)
+#Data_CC=run_all("")
+#print(Data_CC)
+#Data_MI = run_all()
+#print(Data_MI)
