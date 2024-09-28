@@ -6,49 +6,57 @@ import numpy as np
 import matplotlib.pyplot as plt
 import registration as reg
 from IPython.display import display, clear_output
-
-import cv2
 from skimage.filters import gaussian
+import math
 
-#TODO: terminate als er maar weinig verandering is in de cost function. 
-#TODO: gaande weg hogere mu kiezen...
-#TODO: images genereren met noise
-#TODO: functie schrijven voor "noice-canccelling"
-#TODO: print eind transformatie
-#TODO: verschil afbeelding
+#TODO: variabelen en functie namen fixen
 #TODO: pointbased
 
 
 
-def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path='./image_data/1_2_t1.tif',
-                                      mu=0.0005, num_iter = 150, rigid=True, corr_metric="CC"):
 
-    # read the fixed and moving images
-    # change these in order to read different images
-    I = plt.imread(I_path)
-    Im = plt.imread(Im_path)
+def lr_exp_decay(initial_learning_rate, itteration):
+    """
+    Implementing exponential decay for learning rate.
+    
+    Input:
+        initial_learning_rate : The starting learning rate (float)
+        iteration : The current iteration (or step) of training (int)
+        
+    Output:
+        new_learning_rate : The updated learning rate after applying exponential decay (float)
+    """
+    k = 0.3
+    new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
+    return new_learning_rate
 
+def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_iter = 150, rigid=True, corr_metric="CC", Plot=True): #mu=0.0005
+    """
+    Performs an intensity-based image registration using gradient ascent optimization.
+    The function aligns two images, `I` (fixed) and `Im` (moving), using either rigid or affine transformation.
+    The transformation is optimized using a correlation-based metric (Cross-Correlation or Mutual Information)
+    and gradient ascent, with a learning rate controlled by exponential decay.
+
+    Input:
+        I : the fixed image to which the moving image will be alligned (np.ndarray)
+        Im : the moving image that will be transformed and alligned to the fixed image (np.ndarray)
+        initial_learning_rate : the initial learning rate for gradient ascent, default is 0.01 (float)
+        num_iter : the number of iterations for the optimization process, default is 150 (int)
+        rigid : determines the kind of transformation, if true than rigid, if false than affine, default is true (bool)
+        corr_metric : the correlation metrix used to optimize, cross correlation (CC) or mutual information (MI) (string)
+        plot: if true, displays real-time plots of the registration process, showing the moving image overlay and the learning curve, default is true (bool)
+
+    Output: 
+        Im_t : the transformed image after registration (np.ndarray)
+        x : the optimized transformation parameters (np.ndarray)
+        similarity: the final similarity score (CC or MI) between fixed and transformed moving images (float)
+    """
     if rigid:
     # initial values for the parameters
-    # we start with the identity transformation
-    # most likely you will not have to change these
         x = np.array([0., 0., 0.])
         assert corr_metric == "CC", "combination of rigid transformation and MI correlation metric not available."
         fun = lambda x: reg.rigid_corr(I, Im, x, return_transform=False)
 
-    
-
-    # NOTE: for affine registration you have to initialize
-    # more parameters and the scaling parameters should be
-    # initialized to 1 instead of 0
-
-    # the similarity function
-    # this line of code in essence creates a version of rigid_corr()
-    # in which the first two input parameters (fixed and moving image)
-    # are fixed and the only remaining parameter is the vector x with the
-    # parameters of the transformation
-        
-    
     elif rigid == False:
         x = np.array([0., 1., 1., 0., 0., 0., 0.,])
         if corr_metric =="CC":
@@ -57,45 +65,49 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
         elif corr_metric == "MI":
             fun = lambda x: reg.affine_mi(I, Im, x, return_transform=False)
 
-    # # the learning rate
-    # mu = 0.00052#0.002
-
-    # # number of iterations
-    # num_iter = 150#200
+    
 
     iterations = np.arange(1, num_iter+1)
     similarity = np.full((num_iter, 1), np.nan)
 
     
 
+    if Plot == True:
 
-    fig = plt.figure(figsize=(14,6))
+        fig = plt.figure(figsize=(14,6))
 
-    # fixed and moving image, and parameters
-    ax1 = fig.add_subplot(121)
+        # fixed and moving image, and parameters
+        ax1 = fig.add_subplot(121)
 
-    # fixed image
-    im1 = ax1.imshow(I)
-    # moving image
-    im2 = ax1.imshow(Im, alpha=0.7)
-    # parameters
-    txt = ax1.text(0.3, 0.95,
-        np.array2string(x, precision=5, floatmode='fixed'),
-        bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
-        transform=ax1.transAxes)
+        # fixed image
+        im1 = ax1.imshow(I)
+        # moving image
+        im2 = ax1.imshow(Im, alpha=0.7)
+        # parameters
+        txt = ax1.text(0, 0.95,
+            np.array2string(x, precision=5, floatmode='fixed'),
+            bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
+            transform=ax1.transAxes)
+        
+        #more parameters(mu and S):
+        txt2 = ax1.text(0, 0," ",
+            bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10},
+            transform=ax1.transAxes)
 
-    # 'learning' curve
-    ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1))
 
-    learning_curve, = ax2.plot(iterations, similarity, lw=2)
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('Similarity')
-    ax2.grid()
+
+        # 'learning' curve
+        ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1))
+
+        learning_curve, = ax2.plot(iterations, similarity, lw=2)
+        ax2.set_xlabel('Iteration')
+        ax2.set_ylabel('Similarity')
+        ax2.grid()
 
     
     # Define threshold for small changes
-    threshold = 1e-5  # Small value for determining minimal change
-    max_small_change_iters = 3  # The number of small change iterations needed to break
+    threshold = 5e-4  # Small value for determining minimal change
+    max_small_change_iters = 8  # The number of small change iterations needed to break
     small_change_count = 0  # Counter for consecutive small changes
     
 
@@ -104,8 +116,9 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
            
         # gradient ascent
         g = reg.ngradient(fun, x)
-        print(g)
+        #print(g)
         
+        mu = lr_exp_decay(initial_learning_rate, itteration=k)
         x += g*mu
         # for visualization of the result
         if rigid:
@@ -120,51 +133,91 @@ def intensity_based_registration_demo(I_path='./image_data/1_1_t1.tif', Im_path=
 
         clear_output(wait = True)
 
-        # update moving image and parameters
-        im2.set_data(Im_t)
-        txt.set_text(np.array2string(x, precision=5, floatmode='fixed'))
-
-        # update 'learning' curve
         similarity[k] = S
-        learning_curve.set_ydata(similarity)
+        if Plot ==True:
+            
+            # update moving image and parameters
+            im2.set_data(Im_t)
+            txt.set_text(np.array2string(x, precision=5, floatmode='fixed'))
 
-        if k>0 and abs(similarity[k]-similarity[k-1])<threshold:
+            #display mu and S parameters:
+            txt2.set_text(f"mu={mu} and S = {float(S)}")
+
+            # update 'learning' curve
+        
+            learning_curve.set_ydata(similarity)
+            ax2.set_xlim(xmin=1, xmax=k)
+            display(fig)
+        #terminate early:
+        if k>20 and abs(similarity[k]-similarity[k-1])<threshold:        
             small_change_count += 1
             #print(f"Small change detected at iteration {k}, count: {small_change_count}")
         else:
             small_change_count = 0  # Reset the count if the change is large enough
 
         if small_change_count >= max_small_change_iters:
-            print(f"Terminating early at iteration {k} due to small change for {max_small_change_iters} consecutive iterations.")
+            #print(f"Terminating early at iteration {k} due to small change for {max_small_change_iters} consecutive iterations.")
             break
+
+    return Im_t, x, similarity[k]
+    	
+
+def add_noise(img, T, high=False):
+    """This function adds normally distributed noise to a given image. The sigma differs from T1 and T2 images, this is why this is added differently
+    
+    Input:
+        -img : The image without noise (np.ndarray)
+        -T : T1 or T2 (str)
+        -high: determines amount of noise added to the image,  if true, a higher level of noise is added to the image, if false, a lower level of noise is               added (bool)
         
-        display(fig)
+    Output:
+        noisy_image(array): the given image with added Gaussian noise
+    """
+    #img = plt.imread(img_path)
+    mean = 0
+    if T == "T1":
+        if high == True:
+            sigma = 12.6            #Value from research, 'Noise estimation in single coil MR images'
+        elif high == False:
+            sigma = 4.2             #Value from research, 'Noise estimation in single coil MR images'
+    elif T == "T2":
+        if high == True:
+            sigma = 16.2            #Value from research, 'Noise estimation in single coil MR images'
+        elif high == False:
+            sigma = 5.4             #Value from research, 'Noise estimation in single coil MR images'
+    else:
+        print("Invalid T value")
 
-
-def add_noice(img_path, high=False):
-    img = plt.imread(img_path)
-    if high == True:
-        mean = 0
-        sigma = 10
-    elif high == False:
-        mean = 0
-        sigma = 3
-
-    gaussian = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
+    gaussian_noise = np.random.normal(mean, sigma, (img.shape[0],img.shape[1])) 
 
     noisy_image = img + gaussian
 
     return noisy_image
 
-def noise_filtering(img_path):
-    img = plt.imread(img_path)
-    #two ways, cv2 of skimage
-    gaussian_filter = cv2.GaussianBlur(img, (5,5), 0, borderType=cv2.BORDER_CONSTANT)
-    gaussian_filter_ski = gaussian(img, sigma=1, mode='constant', cval=0.0)
+def noise_filtering(img,sigma=1):
+    """Filters noise from an image using a Gaussian filter.
 
-    cv2.imshow("Original", img)
-    cv2.imshow("Gaussian 1", gaussian_filter)
-    cv2.imshow("Gaussian 2", gaussian_filter_ski)
-    return gaussian_filter
+    Input:
+        img : the noisy image to be filtered (np.ndarray)
+        sigma : standard deviation of the Gaussian filter can be chosen accordingly, a larger value results in a smoother image (float)
+                         
+    Output:
+        filtered_image : the image after applying the Gaussian filter (np.ndarray)
+    """	
+    filtered_image = gaussian(img, sigma=sigma, mode='constant', cval=0.0)
+    return  filtered_image
     
-    
+def difference_images(img1, img2):
+    """Calculates the difference between two images after performing intensity-based registration.
+
+    Input:
+        img1 : the first image, reference image 
+        img2 : the second image, moving image, to be registered to img1 (np.ndarray)
+        
+    Output:
+        diff : the difference image showing the pixel-wise difference between img1 and the registered img2 (array)
+    """
+    im_moving, x, S = intensity_based_registration_demo(img1, img2)
+    diff = img1 - im_moving
+    plt.imshow(diff)
+    return diff
