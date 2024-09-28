@@ -2,6 +2,7 @@ import sys
 
 from registration_project import *
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def run_all(corr_metric="CC"):
     """ returns a dictionary with the following format:
@@ -29,16 +30,16 @@ def run_all(corr_metric="CC"):
             image_dict["noise_low_Im"] = add_noise(image_dict["Im"], 'T2',False) #T2 met weinig noise 
 
             #Voor nu bij filteren gebruiken we even zelfde sigma als eroverheen gezet is
-            image_dict["filtered_high_ski"] = noise_filtering(image_dict["noise_high_i"], sigma=20) #T1 hoog gefilterd #16.2
-            image_dict["filtered_high_ski_Im"] = noise_filtering(image_dict["noise_high_Im"], sigma=20) #T2 hoog gefilterd
+            image_dict["filtered_high_ski"] = noise_filtering(image_dict["noise_high_i"], sigma=16.2) #T1 hoog gefilterd #16.2
+            image_dict["filtered_high_ski_Im"] = noise_filtering(image_dict["noise_high_Im"], sigma=16.2) #T2 hoog gefilterd
             image_dict["filtered_low_ski"] = noise_filtering(image_dict["noise_low_i"],sigma=4.2) #T1 laag gefilterd
-            image_dict["filtered_low_ski_Im"] = noise_filtering(image_dict["noise_low_Im"], sigma=5.4) #T2 laag gefilterd 
+            image_dict["filtered_low_ski_Im"] = noise_filtering(image_dict["noise_low_Im"], sigma=4.2) #T2 laag gefilterd 
 
             keys=list(image_dict.keys())
             if patient==3:
-                mu=0.5
+                mu=0.05
             else: 
-                mu=0.1
+                mu=0.01
             for i in range(0,10,2):
                 _, T, _ = intensity_based_registration_demo(image_dict[keys[i]],image_dict[keys[i+1]], initial_learning_rate=mu,
                                                             rigid=False,corr_metric=corr_metric,Plot=False)
@@ -52,6 +53,16 @@ def run_all(corr_metric="CC"):
     return Patients_dict
     
 
-Data_CC=run_all()
-print(Data_CC)
-#DATA_MI = run_all("MI")
+def save_data_to_csv(method="CC"):
+
+    Data=run_all(method)
+    print(Data)
+    dict_of_df = {k: pd.DataFrame.from_dict(v,orient="index") for k,v in Data.items()}
+    df = pd.concat(dict_of_df, axis=0)
+    print(df)
+
+    df.to_csv("MIA-group-8\code\{method}_data.csv")
+    
+
+df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv",index_col=[0,1])
+print(df_CC)
