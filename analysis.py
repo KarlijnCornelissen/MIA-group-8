@@ -6,7 +6,7 @@ print(df_CC_test)
 
 # Creating normalized version:
 def normalized_data(title):
-    df=pd.read_csv("{title}.csv")
+    df=pd.read_csv(f"{title}.csv")
     df_normalized = pd.DataFrame(np.nan, index=df.index, columns=df.columns)
 
     for i in df.index:
