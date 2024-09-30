@@ -30,7 +30,12 @@ def normalized_data(title):
     return df
 
 
-
+def make_scatterplot(df):
+    sns.set_theme(style="ticks", palette="pastel")
+    #print(pd.melt(df))
+    variables = df.columns
+    sns.scatterplot(data=df, x=df.index, y=df.columns[0:5], hue=variables[1:5])
+    plt.show()
 
 def make_boxplots(df):
     sns.set_theme(style="ticks", palette="pastel")
@@ -42,6 +47,12 @@ def make_boxplots(df):
                 data=pd.melt(df), kind="violin", hue="variable")
     plt.show()
 
-df_normalized = normalized_data('CC_data')
-make_boxplots(df_normalized)
+def make_heatmap(df):
+    sns.heatmap(df, annot=True)
+    plt.show()
 
+df_normalized = normalized_data('CC_data')
+# make_boxplots(df_normalized)
+#print(df_normalized.columns[0:5].values())
+#make_scatterplot(df_normalized)
+make_heatmap(df_normalized)
