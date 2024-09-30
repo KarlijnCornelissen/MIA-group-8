@@ -3,9 +3,8 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv", index_col=[0,1])
 
-
+plt.close()
 # Creating normalized version:
 def normalized_data(title):
     df=pd.read_csv(f"MIA-group-8\code\{title}.csv", index_col=[0,1])
@@ -15,7 +14,7 @@ def normalized_data(title):
     df["Image number"]=index_names
     
     df.set_index("Image number",inplace=True)
-    df.columns = ["Original images", "high noise", "Low noise", "large filter", "small filter"]
+    df.columns = ["Original images", "High noise level", "Low noise level", "Large filter", "Small filter"]
     for i in index_names:
         for j in df.columns:
             df.loc[i]=(df.loc[i])/(df.loc[i,"Original images"])
@@ -40,7 +39,7 @@ def make_scatterplot(df):
     sns.scatterplot(data=df, x=df.index, y=df.columns[0:5], hue=variables[1:5])
     plt.show()
 
-def make_boxplots(df_CC, df_MI):
+def plot_results(df_CC, df_MI):
     sns.set_theme(style="ticks", palette="pastel")
     
 
@@ -50,20 +49,22 @@ def make_boxplots(df_CC, df_MI):
     #             data=pd.melt(df), kind="violin", hue="variable")
     # plt.show()
 
-    fig = plt.figure(figsize=(6, 6))
-    ax1= plt.subplot(211)
-    
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 8), sharex=True)
     
     
     #CC:
     df_CC = pd.melt(df_CC)
     df_CC.columns = ["Image type", "Normalized Similarity" ]
 
+    hue_order = df_CC['Image type'].unique()
+    
+
+
     sns.stripplot(ax=ax1, 
-        data=df_CC, x="Image type", y="Normalized Similarity", hue="Image type",
+        data=df_CC, x="Image type", y="Normalized Similarity", hue=None, hue_order=hue_order,
         )
     sns.pointplot(ax=ax1,
-        data=df_CC, x="Image type", y="Normalized Similarity", hue="Image type",
+        data=df_CC, x="Image type", y="Normalized Similarity", hue="Image type", hue_order=hue_order,
         dodge=.8 - .8 / 3, palette="dark", errorbar=None,
         markers="d", markersize=4, linestyle="none",
         )
@@ -73,27 +74,39 @@ def make_boxplots(df_CC, df_MI):
     df_MI.columns = ["Image type", "Normalized Similarity" ]
 
     sns.stripplot(ax=ax2,
-        data=df_MI, x="Image type", y="Normalized Similarity", hue="Image type",
+        data=df_MI, x="Image type", y="Normalized Similarity", hue=None, hue_order=hue_order,
         )
     sns.pointplot(ax=ax2,
-        data=df_MI, x="Image type", y="Normalized Similarity", hue="Image type",
+        data=df_MI, x="Image type", y="Normalized Similarity", hue="Image type",hue_order=hue_order,
         dodge=.8 - .8 / 3, palette="dark", errorbar=None,
         markers="d", markersize=4, linestyle="none",
         ) 
-    
-    sns.despine(left=True)
+    ax1.legend_.remove()
+    ax2.legend_.remove()
+    sns.despine(ax=ax1, left=False, bottom=True)
+    sns.despine(ax=ax2, left=False, bottom=False)
+    ax1.tick_params(bottom=False)
+    ax1.set_xlabel('')
+    ax2.set_xlabel('')
+
+    ax1.set_ylabel("Normalized similarity using\nCC as a similarity metric")
+    ax2.set_ylabel("Normalized similarity using\nMI as a similarity metric")
+    ax2.spines['bottom'].set_visible(True)
+    fig.suptitle("Aquired (Normalised) similarities, for registering images under different circumstances, \nusing CC and MI as a similarity metric. ")
+    plt.subplots_adjust(bottom=0.15)
+    fig.text(0.5, 0.005, """This figure shows the Normalised Similarity (S) after registration of pairs of images(that have different modalities: T1 and T2), 
+             unders several sircumstances. This is shown for the usage of two similarity metrices: Mutual Information and Cross correlation. 
+             The similarity is normalized by deviding S by the similarity of the two original images. This means that image pairs with an S above 1 are better aligned 
+             then the original pair."""
+             , ha='center', fontsize=11)
+
+
     plt.show()
     
-def make_heatmap(df):
-    sns.heatmap(df, annot=True)
-    plt.show()
 
 
 
 df_normalized_MI = normalized_data('MI_data')
 df_normalized_CC = normalized_data('CC_data')
-# 
-make_boxplots(df_normalized_CC,df_normalized_MI)
-#print(df_normalized.columns[0:5].values())
-#make_scatterplot(df_normalized)
-make_heatmap(df_normalized)
+
+plot_results(df_normalized_CC,df_normalized_MI)
