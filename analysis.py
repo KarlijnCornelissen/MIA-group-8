@@ -19,11 +19,7 @@ def normalized_data(title):
         for j in df.columns:
             df.loc[i]=(df.loc[i])/(df.loc[i,"Original images"])
 
-    # if True: #title == "MI":
-    #     s=[f"image: {i}" for i in range(1,7)]
-    #     df=df.loc[s]
-
-
+    
     normalized_title = f"{title}_normalized"
     file_path = f"MIA-group-8/code/{normalized_title}.csv"
 
