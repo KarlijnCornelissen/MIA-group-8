@@ -1,3 +1,5 @@
+# this file is used to generate all the data. 
+
 import sys
 
 from registration_project import *
@@ -88,7 +90,7 @@ def run_all(corr_metric="CC"):
 
 def save_data_to_csv(method="CC"):
     """ run the function run_all, and save the result to a csv file.
-    
+
     you only have to run this function once, after that, you can collect the data using:
     "...
     df_CC=pd.read_csv("MIA-group-8\code\CC_data.csv",index_col=[0,1])

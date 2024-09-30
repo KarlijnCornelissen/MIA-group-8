@@ -1,5 +1,5 @@
 """
-Project code for image registration topics.
+This is the file where all the main functions are. 
 """
 
 import numpy as np
