@@ -97,4 +97,3 @@ make_boxplots(df_normalized_CC,df_normalized_MI)
 #print(df_normalized.columns[0:5].values())
 #make_scatterplot(df_normalized)
 make_heatmap(df_normalized)
-
