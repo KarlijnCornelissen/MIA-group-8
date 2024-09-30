@@ -30,7 +30,7 @@ def lr_exp_decay(initial_learning_rate, itteration):
     new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
     return new_learning_rate
 
-def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_iter = 150, rigid=True, corr_metric="CC", Plot=True): #mu=0.0005
+def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_iter = 150, rigid=True, corr_metric="CC", Plot=True, task2=False): #mu=0.0005
     """
     Performs an intensity-based image registration using gradient ascent optimization.
     The function aligns two images, `I` (fixed) and `Im` (moving), using either rigid or affine transformation.
@@ -97,7 +97,7 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
 
 
         # 'learning' curve
-        ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1))
+        ax2 = fig.add_subplot(122, xlim=(0, num_iter), ylim=(0, 1.5))
 
         learning_curve, = ax2.plot(iterations, similarity, lw=2)
         ax2.set_xlabel('Iteration')
@@ -117,9 +117,11 @@ def intensity_based_registration_demo(I, Im, initial_learning_rate=0.01, num_ite
         # gradient ascent
         g = reg.ngradient(fun, x)
         #print(g)
-        
-        mu = lr_exp_decay(initial_learning_rate, itteration=k)
-        x += g*mu
+        if task2==True:
+            mu = initial_learning_rate
+        elif task2==False:
+            mu = lr_exp_decay(initial_learning_rate, itteration=k)
+            x += g*mu
         # for visualization of the result
         if rigid:
             S, Im_t, _ = reg.rigid_corr(I, Im, x, return_transform=True)
