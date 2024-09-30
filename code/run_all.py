@@ -43,8 +43,8 @@ def run_all(corr_metric="CC"):
             Patients_dict[patient][slice]=[]
             image_dict = {}
             # Load the original T1 and T2 images, for the current patient and slice
-            image_dict["I"] = plt.imread(f"MIA-group-8/code/image_data/{patient}_{slice}_t1.tif") #added again: MIA-group-8/code
-            image_dict["Im"] = plt.imread(f"MIA-group-8/code/image_data/{patient}_{slice}_t2.tif")
+            image_dict["I"] = plt.imread(f"image_data/{patient}_{slice}_t1.tif") #added again: MIA-group-8/code
+            image_dict["Im"] = plt.imread(f"image_data/{patient}_{slice}_t2.tif")
             
             # Add noise to the images with high and low noise levels.
             image_dict["noise_high_i"] = add_noise(image_dict["I"], 'T1', True) #High noise for T1
