@@ -74,7 +74,7 @@ def nuclei_measurement():
     reduced_training_y = training_y[reduced_training_index]  # Shape (N/4, 1)?
     num_reduced_samples = reduced_training_index.shape[0]
     reduced_training_x = reduced_training_images.reshape(numFeatures, num_reduced_samples).T.astype(float)
- 
+    ## ALS IEMAND HIER NOG NAAR KAN KIJKEN OM TE CHECKEN GRAAG##
 
     reduced_Theta = reg.ls_solve(reduced_training_x, reduced_training_y)[0]
     reduced_predicted_y = test_x.dot(reduced_Theta)
@@ -123,10 +123,10 @@ def nuclei_classification():
 
     xx = np.arange(num_iterations)
     loss = np.empty(*xx.shape)
-    loss[:] = np.nan
+    loss[:] = np.nan                  #array filled with NaN values, will be used to save training loss
     validation_loss = np.empty(*xx.shape)
-    validation_loss[:] = np.nan
-    g = np.empty(*xx.shape)
+    validation_loss[:] = np.nan       #array filled with NaN values, will be used to save validation loss
+    g = np.empty(*xx.shape)           #NOG ONBEKEND WORDT VOLGENS MIJ NIET GEBRUIKT:)
     g[:] = np.nan
 
     fig = plt.figure(figsize=(8,8))
@@ -142,8 +142,9 @@ def nuclei_classification():
 
     text_str2 = 'iter.: {}, loss: {:.3f}, val. loss: {:.3f}'.format(0, 0, 0)
     txt2 = ax2.text(0.3, 0.95, text_str2, bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10}, transform=ax2.transAxes)
-
-    for k in np.arange(num_iterations):
+    #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
+        
+    for k in np.arange(num_iterations):                  #for each training iteration
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
 
