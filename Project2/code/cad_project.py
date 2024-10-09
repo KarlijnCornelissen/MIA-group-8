@@ -144,7 +144,7 @@ def nuclei_classification():
     txt2 = ax2.text(0.3, 0.95, text_str2, bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10}, transform=ax2.transAxes)
     #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
         
-    for k in np.arange(num_iterations):                  #for each training iteration
+    for k in np.arange(num_iterations):                  #for each training iterationss
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
 
