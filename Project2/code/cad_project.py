@@ -119,6 +119,14 @@ def nuclei_classification():
     # (batch_size) and number of iterations (num_iterations), as well as
     # initial values for the model parameters (Theta) that will result in
     # fast training of an accurate model for this classification problem.
+    # Then, train the model using the training dataset and validate it
+    # using the validation dataset.
+    mu = 0.0001                 # waarschijnlijk te klein
+    batch_size = 100            # parameters moeten nog aangepast worden
+    num_iterations = 1000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
+    Theta = np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
+    print(Theta.shape)
+
     #-------------------------------------------------------------------#
 
     xx = np.arange(num_iterations)
@@ -143,7 +151,7 @@ def nuclei_classification():
     text_str2 = 'iter.: {}, loss: {:.3f}, val. loss: {:.3f}'.format(0, 0, 0)
     txt2 = ax2.text(0.3, 0.95, text_str2, bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10}, transform=ax2.transAxes)
     #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
-        
+
     for k in np.arange(num_iterations):                  #for each training iteration
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
