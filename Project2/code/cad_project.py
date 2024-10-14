@@ -108,9 +108,10 @@ def lr_exp_decay(initial_learning_rate, itteration):
     Output:
         new_learning_rate : The updated learning rate after applying exponential decay (float)
     """
-    k = 0.99
-    new_learning_rate = initial_learning_rate * k
-    # new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
+    # k = 0.9
+    # new_learning_rate = initial_learning_rate * k
+    k=0.0001
+    new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
     return new_learning_rate
 
 
@@ -138,8 +139,8 @@ def nuclei_classification():
     # Then, train the model using the training dataset and validate it
     # using the validation dataset.
     mu = 0.001                 # Dit is de begin waarde van mu (deze wordt per itteratie aangepast)
-    batch_size = 30            # lijkt ronde de 30 te moeten zitten voor ideale waardes
-    num_iterations = 300       # bijna geen NaN values meer/ ook geen inf values
+    batch_size = 50            # lijkt ronde de 30 te moeten zitten voor ideale waardes
+    num_iterations = 500       # bijna geen NaN values meer/ ook geen inf values
     Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
     print(Theta.shape)
 
@@ -170,11 +171,6 @@ def nuclei_classification():
 
     for k in np.arange(num_iterations):                  #for each training iteration
         
-        #-----------------------------------------------------------------------------------------------------------------
-        mu = lr_exp_decay(mu, k)
-        ax2.set_title('mu = '+str(mu))
-        #-----------------------------------------------------------------------------------------------------------------
-
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
 
@@ -202,6 +198,13 @@ def nuclei_classification():
         Theta = np.array(Theta_new)
         Theta_new = None
         tmp = None
+        
+        #-----------------------------------------------------------------------------------------------------------------
+        # if validation_loss[k] < validation_loss[k-1]:
+        #     mu = lr_exp_decay(mu, k)
+        mu = lr_exp_decay(mu, k)
+        ax2.set_title('mu = '+str(mu))
+        #-----------------------------------------------------------------------------------------------------------------
 
         display(fig)
         clear_output(wait = True)
