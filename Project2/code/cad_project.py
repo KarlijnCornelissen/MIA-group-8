@@ -10,6 +10,7 @@ import cad
 import scipy
 from IPython.display import display, clear_output
 import scipy.io
+import math
 
 
 def nuclei_measurement():
@@ -96,6 +97,21 @@ def nuclei_measurement():
     #---------------------------------------------------------------------#
 
     return E_full, E_reduced
+def lr_exp_decay(initial_learning_rate, itteration):
+    """
+    Implementing exponential decay for learning rate.
+    
+    Input:
+        initial_learning_rate : The starting learning rate (float)
+        iteration : The current iteration (or step) of training (int)
+        
+    Output:
+        new_learning_rate : The updated learning rate after applying exponential decay (float)
+    """
+    k = 0.99
+    new_learning_rate = initial_learning_rate * k
+    # new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
+    return new_learning_rate
 
 
 def nuclei_classification():
@@ -121,10 +137,10 @@ def nuclei_classification():
     # fast training of an accurate model for this classification problem.
     # Then, train the model using the training dataset and validate it
     # using the validation dataset.
-    mu = 0.0001                 # waarschijnlijk te klein
-    batch_size = 100            # parameters moeten nog aangepast worden
-    num_iterations = 1000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
-    Theta = np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
+    mu = 0.001                 # Dit is de begin waarde van mu (deze wordt per itteratie aangepast)
+    batch_size = 30            # lijkt ronde de 30 te moeten zitten voor ideale waardes
+    num_iterations = 300       # bijna geen NaN values meer/ ook geen inf values
+    Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
     print(Theta.shape)
 
     #-------------------------------------------------------------------#
@@ -153,6 +169,12 @@ def nuclei_classification():
     #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
 
     for k in np.arange(num_iterations):                  #for each training iteration
+        
+        #-----------------------------------------------------------------------------------------------------------------
+        mu = lr_exp_decay(mu, k)
+        ax2.set_title('mu = '+str(mu))
+        #-----------------------------------------------------------------------------------------------------------------
+
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
 
