@@ -82,6 +82,12 @@ def mypca(X):
     #------------------------------------------------------------------#
     #TODO: Calculate covariance matrix of X, find eigenvalues and eigenvectors,
     # sort them, and rotate X using the eigenvectors
+    cov = np.cov(X.T)
+    w, v = np.linalg.eig(cov)
+    idx = np.argsort(w)[::-1]
+    w = w[idx]
+    v = v[:,idx]
+    X_pca = X.dot(v)
     #------------------------------------------------------------------#
     
     #Return fraction of variance

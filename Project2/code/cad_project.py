@@ -10,6 +10,7 @@ import cad
 import scipy
 from IPython.display import display, clear_output
 import scipy.io
+import math
 
 
 def nuclei_measurement():
@@ -96,6 +97,22 @@ def nuclei_measurement():
     #---------------------------------------------------------------------#
 
     return E_full, E_reduced
+def lr_exp_decay(initial_learning_rate, itteration):
+    """
+    Implementing exponential decay for learning rate.
+    
+    Input:
+        initial_learning_rate : The starting learning rate (float)
+        iteration : The current iteration (or step) of training (int)
+        
+    Output:
+        new_learning_rate : The updated learning rate after applying exponential decay (float)
+    """
+    # k = 0.9
+    # new_learning_rate = initial_learning_rate * k
+    k=0.0001
+    new_learning_rate = initial_learning_rate * math.exp(-k * itteration)
+    return new_learning_rate
 
 
 def nuclei_classification():
@@ -119,6 +136,14 @@ def nuclei_classification():
     # (batch_size) and number of iterations (num_iterations), as well as
     # initial values for the model parameters (Theta) that will result in
     # fast training of an accurate model for this classification problem.
+    # Then, train the model using the training dataset and validate it
+    # using the validation dataset.
+    mu = 0.001                 # Dit is de begin waarde van mu (deze wordt per itteratie aangepast)
+    batch_size = 50            # lijkt ronde de 30 te moeten zitten voor ideale waardes
+    num_iterations = 500       # bijna geen NaN values meer/ ook geen inf values
+    Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
+    print(Theta.shape)
+
     #-------------------------------------------------------------------#
 
     xx = np.arange(num_iterations)
@@ -143,8 +168,9 @@ def nuclei_classification():
     text_str2 = 'iter.: {}, loss: {:.3f}, val. loss: {:.3f}'.format(0, 0, 0)
     txt2 = ax2.text(0.3, 0.95, text_str2, bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10}, transform=ax2.transAxes)
     #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
+
+    for k in np.arange(num_iterations):                  #for each training iteration
         
-    for k in np.arange(num_iterations):                  #for each training iterationss
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
 
@@ -172,6 +198,13 @@ def nuclei_classification():
         Theta = np.array(Theta_new)
         Theta_new = None
         tmp = None
+        
+        #-----------------------------------------------------------------------------------------------------------------
+        # if validation_loss[k] < validation_loss[k-1]:
+        #     mu = lr_exp_decay(mu, k)
+        mu = lr_exp_decay(mu, k)
+        ax2.set_title('mu = '+str(mu))
+        #-----------------------------------------------------------------------------------------------------------------
 
         display(fig)
         clear_output(wait = True)

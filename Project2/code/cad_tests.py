@@ -520,7 +520,6 @@ def eigen_vecval_test(sigma):
             orthogonality_results.append((i+1, j+1, dot_product))
     
     #------------------------------------------------------------------#
-    #pass
     return v, w
     
     
@@ -529,8 +528,7 @@ def rotate_using_eigenvectors_test(X, Y, v):
     rotated_X = X @ v  # Using matrix multiplication to rotate the data
     print("Original X:\n", X)
     print("Rotated X:\n", rotated_X)
-    #------------------------------------------------------------------#
-    pass 
+    #------------------------------------------------------------------# 
 
 def test_mypca():
     #Generates some toy data in 2D, computes PCA, and plots both datasets
