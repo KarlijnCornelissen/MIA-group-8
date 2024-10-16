@@ -139,7 +139,7 @@ def nuclei_classification():
     # Then, train the model using the training dataset and validate it
     # using the validation dataset.
     mu = 0.001                 # Dit is de begin waarde van mu (deze wordt per itteratie aangepast)
-    batch_size = 50            # lijkt ronde de 30 te moeten zitten voor ideale waardes
+    batch_size = 50            # lijkt rond de 30 te moeten zitten voor ideale waardes
     num_iterations = 500       # bijna geen NaN values meer/ ook geen inf values
     Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
     print(Theta.shape)
