@@ -15,6 +15,7 @@ import registration as reg
 
 import matplotlib.pyplot as plt
 from IPython.display import display, clear_output, HTML
+from cad_project import lr_exp_decay
 
 
 # SECTION 1: Linear regression
@@ -317,6 +318,13 @@ def model_training():
     plt.show()
     
 class Training:
+    def __init__(self, learning_rate=0.001, batchsize=128, n_hidden_features=1000, training_plot_N="training_plot_0", test_hist="test_hist_0"):
+        self.learning_rate = learning_rate
+        self.batchsize = batchsize
+        self.n_hidden_features = n_hidden_features
+        self.training_plot_N = training_plot_N
+        self.test_hist = test_hist
+        self.initial_learning_rate=self.learning_rate
     
     def data_preprocessing(self):
 
@@ -345,9 +353,7 @@ class Training:
 
     def define_shapes(self):
 
-        self.learning_rate = 0.001
-        self.batchsize = 128
-        n_hidden_features = 1000
+        
 
         in_features = self.training_x.shape[1]
         out_features = 1                  # Classification problem, so you want to obtain 1 value (a probability) per image
@@ -356,8 +362,8 @@ class Training:
         #---------------------------------------------------------------------#
         # TODO: Create two variables: w1_shape and w2_shape, and define them as
         # follows (as a function of variables defined above)
-        self.w1_shape = (in_features , n_hidden_features) #between input and hidden layer
-        self.w2_shape = (n_hidden_features, out_features) #between hidden layer and output
+        self.w1_shape = (in_features , self.n_hidden_features) #between input and hidden layer
+        self.w2_shape = (self.n_hidden_features, out_features) #between hidden layer and output
         #---------------------------------------------------------------------#
 
         return {'w1_shape': self.w1_shape,
@@ -381,6 +387,7 @@ class Training:
 
             # Shuffle training images every epoch
             training_x, training_y = util.shuffle_training_x(self.training_x, self.training_y)
+            self.learning_rate = lr_exp_decay(self.initial_learning_rate, epoch)
 
             for batch_i in range(self.training_x.shape[0]//self.batchsize):
 
@@ -413,13 +420,16 @@ class Training:
             ax[0].plot(steps,training_loss)
             ax[0].plot(range(1, len(validation_loss)+1), validation_loss, '.')
             ax[0].legend(['Training loss', 'Validation loss'])
-            ax[0].set_title(f'Loss curves after {epoch+1}/{n_epochs} epochs')
+            ax[0].set_title(f'Loss curves with mu={self.learning_rate} and batchsize={self.batchsize}')
             ax[0].set_ylabel('Loss'); ax[0].set_xlabel('epochs')
             ax[0].set_xlim([0, 100]); ax[0].set_ylim([0, max(training_loss)])
             ax[1].plot(Acc)
-            ax[1].set_title(f'Validation accuracy after {epoch+1}/{n_epochs} epochs')
+            ax[1].set_title(f'Validation accuracy after {n_epochs} epochs')
             ax[1].set_ylabel('Accuracy'); ax[1].set_xlabel('epochs')
             ax[1].set_xlim([0, 100]); ax[1].set_ylim([min(Acc),0.8])
+            
+            plt.gcf()
+            plt.savefig(f'{self.training_plot_N}.jpg')
             plt.show()
         print('> Training finished')
             
@@ -438,7 +448,10 @@ class Training:
         plt.hist(large_list, 50, alpha = 0.5)
         plt.legend(['Small (label = 0)','Large (label = 1)'], loc = 'upper center')
         plt.xlabel('Prediction')
-        plt.title('Final test set predictions')
+        plt.title(f'Final test set predictions with mu={self.learning_rate}, batchsize={self.batchsize}; \n accuract={test_accuracy}')
+        
+        plt.gcf()
+        plt.savefig(f'{self.test_hist}.jpg')
         plt.show()
         
     def forward(self, x, weights):

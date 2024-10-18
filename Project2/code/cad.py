@@ -39,7 +39,7 @@ def lr_nll(X, Y, Theta):
     #-------------------------------------------------------------------#
     # TODO: Implement the expression for the NLL.
 
-    L = -np.sum(Y*np.log(p)+(1-Y)*np.log(1-p))
+    L = -1 *np.sum(Y*np.log(p)+(1-Y)*np.log(1-p))
     
     #-------------------------------------------------------------------#
 
