@@ -10,6 +10,7 @@ import cad
 import scipy
 from IPython.display import display, clear_output
 import scipy.io
+import math
 
 
 def nuclei_measurement():
@@ -97,6 +98,24 @@ def nuclei_measurement():
 
     return E_full, E_reduced
 
+def reduce_data(training_images, training_y, percentage):
+    """
+    Reduce the training data by a factor of 'factor'.
+    
+    Input:
+        training_images : The training images (numpy array)
+        training_y : The training labels (numpy array)
+        percentage : The percentage of the data that should be kept (int)
+        
+    Output:
+        reduced_training_images : The reduced training images (numpy array)
+        reduced_training_y : The reduced training labels (numpy array)
+    """
+    factor = int(100/percentage)
+    reduced_training_index = np.arange(0, training_images.shape[3], factor)
+    reduced_training_images = training_images[:, :, :, reduced_training_index]
+    reduced_training_y = training_y[reduced_training_index]
+    return reduced_training_images, reduced_training_y
 
 def nuclei_classification():
     ## dataset preparation
@@ -122,10 +141,9 @@ def nuclei_classification():
     # Then, train the model using the training dataset and validate it
     # using the validation dataset.
     mu = 0.0001                 # waarschijnlijk te klein
-    batch_size = 100            # parameters moeten nog aangepast worden
-    num_iterations = 1000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
-    Theta = np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
-    print(Theta.shape)
+    batch_size = 30            # Batch size lijkt rond de 30 te zitten
+    num_iterations = 5000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
+    Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
 
     #-------------------------------------------------------------------#
 
@@ -151,6 +169,10 @@ def nuclei_classification():
     text_str2 = 'iter.: {}, loss: {:.3f}, val. loss: {:.3f}'.format(0, 0, 0)
     txt2 = ax2.text(0.3, 0.95, text_str2, bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10}, transform=ax2.transAxes)
     #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
+
+    #-----------------------------------------------------------------------------------------------------------------
+    different = 0 # Variable to keep track of the number of times the validation loss has not decreased
+    #-----------------------------------------------------------------------------------------------------------------
 
     for k in np.arange(num_iterations):                  #for each training iteration
         # pick a batch at random
@@ -181,6 +203,14 @@ def nuclei_classification():
         Theta_new = None
         tmp = None
 
+        #-----------------------------------------------------------------------------------------------------------------
+        if abs(validation_loss[k]-validation_loss[k-1]) < 0.00005:
+            different += 1
+        if different == 5:
+            break
+        #-----------------------------------------------------------------------------------------------------------------
+
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
+    accuracy = (validation_y == np.round(val_output)).sum()/(validation_y.shape[0])
