@@ -11,6 +11,7 @@ import scipy
 from IPython.display import display, clear_output
 import scipy.io
 import math
+from sklearn.metrics import confusion_matrix
 
 
 def nuclei_measurement():
@@ -129,6 +130,11 @@ def nuclei_classification():
     validation_images = mat["validation_images"] # (24, 24, 3, 7303)
     validation_y = mat["validation_y"] # (7303, 1)
 
+    #---------------------------------------------------------------------#
+    ## reduce the training data
+    # training_images, training_y = reduce_data(training_images, training_y, 0.5)
+    #---------------------------------------------------------------------#
+
     ## dataset preparation
     training_x, validation_x, test_x = util.reshape_and_normalize(training_images, validation_images, test_images)      
     
@@ -195,7 +201,7 @@ def nuclei_classification():
         # visualize the training
         h1.set_ydata(loss)
         h2.set_ydata(validation_loss)
-        text_str2 = 'iter.: {}, loss: {:.3f}, val. loss={:.3f} '.format(k, loss[k], validation_loss[k])
+        text_str2 = 'iter.: {}, loss: {:.3f}, val. loss={:.3f}, diff={} '.format(k, loss[k], validation_loss[k], different)
         txt2.set_text(text_str2)
 
         Theta = None
@@ -204,13 +210,41 @@ def nuclei_classification():
         tmp = None
 
         #-----------------------------------------------------------------------------------------------------------------
-        if abs(validation_loss[k]-validation_loss[k-1]) < 0.00005:
+        # Stop training if the validation loss has not decreased for 5 iterations
+        if abs(validation_loss[k]-validation_loss[k-1]) < 0.001:
             different += 1
-        if different == 5:
+        else:
+            different = 0
+        if different == 10:
             break
         #-----------------------------------------------------------------------------------------------------------------
 
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
-    accuracy = (validation_y == np.round(val_output)).sum()/(validation_y.shape[0])
+    accuracy = (validation_y == np.round(validation_x_ones.dot(Theta))).sum()/(validation_y.shape[0])
+    # accuracy = (validation_y == np.round(val_output)).sum()/(validation_y.shape[0])
+    print('Accuracy: ', accuracy)
+    ax2.set_xlim(0, k)
+    display(fig)
+
+def calculate_recall(validation_x, validation_y, Theta):
+    """
+    Calculate the recall of the nuclei classification model.
+    
+    Input:
+        validation_x : The validation images (numpy array)
+        validation_y : The true labels for the validation images (numpy array)
+        Theta : The trained model parameters (numpy array)
+        
+    Output:
+        recall : The recall of the nuclei classification model (float)
+    """
+    validation_x_ones = util.addones(validation_x)
+    predicted = np.round(validation_x_ones.dot(Theta))
+    true = validation_y
+    
+    tn, fp, fn, tp = confusion_matrix(true, predicted).ravel()
+    recall = tp / (tp + fn)
+    
+    return recall
