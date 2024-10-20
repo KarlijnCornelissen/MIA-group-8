@@ -10,6 +10,8 @@ import cad
 import scipy
 from IPython.display import display, clear_output
 import scipy.io
+import math
+from sklearn.metrics import confusion_matrix
 
 
 def nuclei_measurement():
@@ -97,6 +99,23 @@ def nuclei_measurement():
 
     return E_full, E_reduced
 
+def reduce_data(training_images, training_y, percentage):
+    """
+    Reduce the training data the the given percentage.
+    
+    Input:
+        training_images : The training images (numpy array)
+        training_y : The training labels (numpy array)
+        percentage : The percentage of the data that should be kept (int)
+        
+    Output:
+        reduced_training_images : The reduced training images (numpy array)
+        reduced_training_y : The reduced training labels (numpy array)
+    """
+    reduced_training_index = np.arange(0, training_images.shape[3], int(100/percentage))
+    reduced_training_images = training_images[:, :, :, reduced_training_index]
+    reduced_training_y = training_y[reduced_training_index]
+    return reduced_training_images, reduced_training_y
 
 def nuclei_classification():
     ## dataset preparation
@@ -110,6 +129,11 @@ def nuclei_classification():
     validation_images = mat["validation_images"] # (24, 24, 3, 7303)
     validation_y = mat["validation_y"] # (7303, 1)
 
+    #---------------------------------------------------------------------#
+    ## reduce the training data
+    # training_images, training_y = reduce_data(training_images, training_y, 0.5)
+    #---------------------------------------------------------------------#
+
     ## dataset preparation
     training_x, validation_x, test_x = util.reshape_and_normalize(training_images, validation_images, test_images)      
     
@@ -122,10 +146,9 @@ def nuclei_classification():
     # Then, train the model using the training dataset and validate it
     # using the validation dataset.
     mu = 0.0001                 # waarschijnlijk te klein
-    batch_size = 100            # parameters moeten nog aangepast worden
-    num_iterations = 1000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
-    Theta = np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
-    print(Theta.shape)
+    batch_size = 30            # Batch size lijkt rond de 30 te zitten
+    num_iterations = 5000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
+    Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
 
     #-------------------------------------------------------------------#
 
@@ -152,6 +175,10 @@ def nuclei_classification():
     txt2 = ax2.text(0.3, 0.95, text_str2, bbox={'facecolor': 'white', 'alpha': 1, 'pad': 10}, transform=ax2.transAxes)
     #Text string to display the current iteration and loss values. This text will be updated during each iteration to reflect the progress.
 
+    #-----------------------------------------------------------------------------------------------------------------
+    different = 0 # Variable to keep track of the number of times the validation loss has not decreased
+    #-----------------------------------------------------------------------------------------------------------------
+
     for k in np.arange(num_iterations):                  #for each training iteration
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
@@ -173,7 +200,7 @@ def nuclei_classification():
         # visualize the training
         h1.set_ydata(loss)
         h2.set_ydata(validation_loss)
-        text_str2 = 'iter.: {}, loss: {:.3f}, val. loss={:.3f} '.format(k, loss[k], validation_loss[k])
+        text_str2 = 'iter.: {}, loss: {:.3f}, val. loss={:.3f}, diff={} '.format(k, loss[k], validation_loss[k], different)
         txt2.set_text(text_str2)
 
         Theta = None
@@ -181,9 +208,49 @@ def nuclei_classification():
         Theta_new = None
         tmp = None
 
+        #-----------------------------------------------------------------------------------------------------------------
+        # Stop training if the validation loss has not decreased for 9 iterations
+        if abs(validation_loss[k]-validation_loss[k-1]) < 0.001:
+            different += 1
+        else:
+            different = 0
+        if different == 9:
+            break
+        #-----------------------------------------------------------------------------------------------------------------
+
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
+    error = abs(validation_x_ones.dot(Theta) - validation_y)/validation_y.shape[0]*100
+    accuracy = 100-error.mean()
+    recall = calculate_recall(validation_x_ones, validation_y, Theta)
+    
+    print('Error: ', error)
+    print('Accuracy: ', accuracy)
+    print('Recall: ', recall)
+    ax2.set_xlim(0, k)
+    display(fig)
+
+def calculate_recall(validation_x_ones, validation_y, Theta):
+    """
+    Calculate the recall of the nuclei classification model.
+    
+    Input:
+        validation_x_ones : The validation images (numpy array) stacked with ones shape (7303, 1729)
+        validation_y : The true labels for the validation images (numpy array) shape (7303, 1)
+        Theta : The trained model parameters (numpy array) shape (1729, 1)
+        
+    Output:
+        recall : The recall of the nuclei classification model (float)
+    """
+    predicted = np.round(validation_x_ones.dot(Theta)) 
+    predicted = np.round(predicted >= 1).astype(int) # Round to 0 or 1
+    true = validation_y
+    tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
+    recall = tp / (tp + fn) # Calculate recall
+    
+    return recall
+    
 
 def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
     i = validation_loss.index(min(validation_loss))
