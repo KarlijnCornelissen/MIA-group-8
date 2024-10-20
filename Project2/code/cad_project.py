@@ -184,3 +184,11 @@ def nuclei_classification():
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
+
+def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
+    i = validation_loss.index(min(validation_loss))
+    Accuracy = Acc[i]
+    weights = weights_list[i]
+
+    return weights, Accuracy
+

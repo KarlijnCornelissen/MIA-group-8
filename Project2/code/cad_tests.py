@@ -15,7 +15,7 @@ import registration as reg
 
 import matplotlib.pyplot as plt
 from IPython.display import display, clear_output, HTML
-from cad_project import lr_exp_decay
+from cad_project import *
 
 
 # SECTION 1: Linear regression
@@ -318,12 +318,12 @@ def model_training():
     plt.show()
     
 class Training:
-    def __init__(self, learning_rate=0.001, batchsize=128, n_hidden_features=1000, training_plot_N="training_plot_0", test_hist="test_hist_0"):
+    def __init__(self, learning_rate=0.001, batchsize=128, n_hidden_features=1000, training_plot_N="training_plot_0", title="title"):
         self.learning_rate = learning_rate
         self.batchsize = batchsize
         self.n_hidden_features = n_hidden_features
         self.training_plot_N = training_plot_N
-        self.test_hist = test_hist
+        self.title = title
         self.initial_learning_rate=self.learning_rate
     
     def data_preprocessing(self):
@@ -376,18 +376,18 @@ class Training:
         validation_loss = []
         Acc = []
         steps = []
-
+        weights_list = []       #remember weights to recall best model
         # randomly initialize model weights
         self.weights = util.init_model(self.w1_shape, self.w2_shape)
 
         print('> Start training ...')
         # Train for n_epochs epochs
-        n_epochs = 100
+        n_epochs = 150
         for epoch in range(n_epochs): 
 
             # Shuffle training images every epoch
             training_x, training_y = util.shuffle_training_x(self.training_x, self.training_y)
-            self.learning_rate = lr_exp_decay(self.initial_learning_rate, epoch)
+            #self.learning_rate = lr_exp_decay(self.initial_learning_rate, epoch)
 
             for batch_i in range(self.training_x.shape[0]//self.batchsize):
 
@@ -413,6 +413,7 @@ class Training:
             validation_loss.append(val_loss)
             accuracy = (self.validation_y == np.round(val_output)).sum()/(self.validation_y.shape[0])
             Acc.append(accuracy)
+            weights_list.append(self.weights)
 
             # Plot loss function and accuracy of validation set
             clear_output(wait=True)
@@ -420,18 +421,20 @@ class Training:
             ax[0].plot(steps,training_loss)
             ax[0].plot(range(1, len(validation_loss)+1), validation_loss, '.')
             ax[0].legend(['Training loss', 'Validation loss'])
-            ax[0].set_title(f'Loss curves with mu={self.learning_rate} and batchsize={self.batchsize}')
+            ax[0].set_title(self.title)
             ax[0].set_ylabel('Loss'); ax[0].set_xlabel('epochs')
-            ax[0].set_xlim([0, 100]); ax[0].set_ylim([0, max(training_loss)])
+            ax[0].set_xlim([0, n_epochs]); ax[0].set_ylim([0, 0.5])
             ax[1].plot(Acc)
             ax[1].set_title(f'Validation accuracy after {n_epochs} epochs')
             ax[1].set_ylabel('Accuracy'); ax[1].set_xlabel('epochs')
-            ax[1].set_xlim([0, 100]); ax[1].set_ylim([min(Acc),0.8])
+            ax[1].set_xlim([0, n_epochs]); ax[1].set_ylim([0.6,0.9])
             
             plt.gcf()
             plt.savefig(f'{self.training_plot_N}.jpg')
             plt.show()
         print('> Training finished')
+        best_weights, Accuracy = get_model_parameters(self.validation_x, self.validation_y, validation_loss, weights_list, Acc)
+        return best_weights, Accuracy
             
     def pass_on_test_set(self):
         
@@ -451,7 +454,7 @@ class Training:
         plt.title(f'Final test set predictions with mu={self.learning_rate}, batchsize={self.batchsize}; \n accuract={test_accuracy}')
         
         plt.gcf()
-        plt.savefig(f'{self.test_hist}.jpg')
+        plt.savefig(f'{self.title}.jpg')
         plt.show()
         
     def forward(self, x, weights):
