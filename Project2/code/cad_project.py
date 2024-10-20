@@ -101,7 +101,7 @@ def nuclei_measurement():
 
 def reduce_data(training_images, training_y, percentage):
     """
-    Reduce the training data by a factor of 'factor'.
+    Reduce the training data the the given percentage.
     
     Input:
         training_images : The training images (numpy array)
@@ -112,8 +112,7 @@ def reduce_data(training_images, training_y, percentage):
         reduced_training_images : The reduced training images (numpy array)
         reduced_training_y : The reduced training labels (numpy array)
     """
-    factor = int(100/percentage)
-    reduced_training_index = np.arange(0, training_images.shape[3], factor)
+    reduced_training_index = np.arange(0, training_images.shape[3], int(100/percentage))
     reduced_training_images = training_images[:, :, :, reduced_training_index]
     reduced_training_y = training_y[reduced_training_index]
     return reduced_training_images, reduced_training_y
@@ -210,41 +209,45 @@ def nuclei_classification():
         tmp = None
 
         #-----------------------------------------------------------------------------------------------------------------
-        # Stop training if the validation loss has not decreased for 5 iterations
+        # Stop training if the validation loss has not decreased for 9 iterations
         if abs(validation_loss[k]-validation_loss[k-1]) < 0.001:
             different += 1
         else:
             different = 0
-        if different == 10:
+        if different == 9:
             break
         #-----------------------------------------------------------------------------------------------------------------
 
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
-    accuracy = (validation_y == np.round(validation_x_ones.dot(Theta))).sum()/(validation_y.shape[0])
-    # accuracy = (validation_y == np.round(val_output)).sum()/(validation_y.shape[0])
+    error = abs(validation_x_ones.dot(Theta) - validation_y)/validation_y.shape[0]*100
+    accuracy = 100-error.mean()
+    recall = calculate_recall(validation_x_ones, validation_y, Theta)
+    
+    print('Error: ', error)
     print('Accuracy: ', accuracy)
+    print('Recall: ', recall)
     ax2.set_xlim(0, k)
     display(fig)
 
-def calculate_recall(validation_x, validation_y, Theta):
+def calculate_recall(validation_x_ones, validation_y, Theta):
     """
     Calculate the recall of the nuclei classification model.
     
     Input:
-        validation_x : The validation images (numpy array)
-        validation_y : The true labels for the validation images (numpy array)
-        Theta : The trained model parameters (numpy array)
+        validation_x_ones : The validation images (numpy array) stacked with ones shape (7303, 1729)
+        validation_y : The true labels for the validation images (numpy array) shape (7303, 1)
+        Theta : The trained model parameters (numpy array) shape (1729, 1)
         
     Output:
         recall : The recall of the nuclei classification model (float)
     """
-    validation_x_ones = util.addones(validation_x)
-    predicted = np.round(validation_x_ones.dot(Theta))
+    predicted = np.round(validation_x_ones.dot(Theta)) 
+    predicted = np.round(predicted >= 1).astype(int) # Round to 0 or 1
     true = validation_y
-    
-    tn, fp, fn, tp = confusion_matrix(true, predicted).ravel()
-    recall = tp / (tp + fn)
+    tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
+    recall = tp / (tp + fn) # Calculate recall
     
     return recall
+    
