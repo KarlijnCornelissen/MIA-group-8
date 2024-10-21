@@ -221,31 +221,31 @@ def nuclei_classification():
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
-    error = abs(validation_x_ones.dot(Theta) - validation_y)/validation_y.shape[0]*100
+    error = abs(util.addones(test_x).dot(Theta) - test_y)/test_y.shape[0]*100
     accuracy = 100-error.mean()
-    recall = calculate_recall(validation_x_ones, validation_y, Theta)
-    
+    recall = calculate_recall(util.addones(test_x), test_y, Theta)
+        
     print('Error: ', error)
     print('Accuracy: ', accuracy)
     print('Recall: ', recall)
     ax2.set_xlim(0, k)
     display(fig)
 
-def calculate_recall(validation_x_ones, validation_y, Theta):
+def calculate_recall(test_x_ones, test_y, Theta):
     """
     Calculate the recall of the nuclei classification model.
     
     Input:
-        validation_x_ones : The validation images (numpy array) stacked with ones shape (7303, 1729)
-        validation_y : The true labels for the validation images (numpy array) shape (7303, 1)
+        test_x_ones : The test images (numpy array) stacked with ones shape (7303, 1729)
+        test_y : The true labels for the test images (numpy array) shape (7303, 1)
         Theta : The trained model parameters (numpy array) shape (1729, 1)
         
     Output:
         recall : The recall of the nuclei classification model (float)
     """
-    predicted = np.round(validation_x_ones.dot(Theta)) 
+    predicted = np.round(test_x_ones.dot(Theta)) 
     predicted = np.round(predicted >= 1).astype(int) # Round to 0 or 1
-    true = validation_y
+    true = test_y
     tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
     recall = tp / (tp + fn) # Calculate recall
     
