@@ -280,3 +280,29 @@ def get_model_parameters(validation_x, validation_y, validation_loss, weights_li
 
     return weights, Accuracy
 
+def get_results_testset_Neural_Network(test_x,test_y,weights):
+    w1 = weights['w1']
+    w2 = weights['w2']
+
+    hidden = util.sigmoid(np.dot(test_x, w1))
+    output = util.sigmoid(np.dot(hidden, w2))
+    output = np.round(output)
+
+    # test_accuracy = (test_y == output).sum()/(test_y.shape[0])        #komt hetzelfde uit als hieronder....
+    tn, fp, fn, tp = confusion_matrix(output, test_y).ravel()
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    
+    FPR = fp / (fp + tn) # Calculate false positive rate
+    TPR = tp / (tp + fn) # Calculate true positive rate
+    recall = tp / (tp + fn) # Calculate recall
+    Precision = tp / (tp + fp) # Calculate precision
+    F1 = 2 * (Precision * recall) / (Precision + recall) # Calculate F1 score
+
+    print('Accuracy: ', accuracy)
+    print('False Positive Rate: ', FPR)
+    print('Recall: ', recall)
+    print('Precision: ', Precision)
+    print('F1 Score: ', F1)
+    print("false negatives: ", fn)
+    
+

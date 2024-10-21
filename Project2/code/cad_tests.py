@@ -326,7 +326,7 @@ class Training:
         self.title = title
         self.initial_learning_rate=self.learning_rate
     
-    def data_preprocessing(self):
+    def data_preprocessing(self, return_test=False):
 
         ## load dataset (images and labels y)
         fn = '../data/nuclei_data_classification.mat'
@@ -349,7 +349,10 @@ class Training:
 
         # Visualize several training images classified as large or small
         #util.visualize_big_small_images(self.training_x, self.training_y, training_images.shape)
-        util.visualize_big_small_images(training_images, self.training_y) #raw data are showed
+        if return_test == False:
+            util.visualize_big_small_images(training_images, self.training_y) #raw data are showed
+        else:
+            return self.test_x, self.test_y
 
     def define_shapes(self):
 
@@ -444,6 +447,7 @@ class Training:
         print('Test accuracy: {:.2f}'.format(test_accuracy))
 
         # Plot final test predictions
+
         large_list = test_output[self.test_y==1]
         small_list = test_output[self.test_y==0]
         plt.figure()
