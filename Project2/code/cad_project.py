@@ -157,7 +157,7 @@ def nuclei_classification():
     loss[:] = np.nan                  #array filled with NaN values, will be used to save training loss
     validation_loss = np.empty(*xx.shape)
     validation_loss[:] = np.nan       #array filled with NaN values, will be used to save validation loss
-    g = np.empty(*xx.shape)           #NOG ONBEKEND WORDT VOLGENS MIJ NIET GEBRUIKT:)
+    g = np.empty(*xx.shape)
     g[:] = np.nan
 
     fig = plt.figure(figsize=(8,8))
@@ -177,6 +177,7 @@ def nuclei_classification():
 
     #-----------------------------------------------------------------------------------------------------------------
     different = 0 # Variable to keep track of the number of times the validation loss has not decreased
+    # accuracy = [] # List to store the accuracy of the model
     #-----------------------------------------------------------------------------------------------------------------
 
     for k in np.arange(num_iterations):                  #for each training iteration
@@ -197,6 +198,8 @@ def nuclei_classification():
         loss[k] = loss_fun(Theta_new)/batch_size
         validation_loss[k] = cad.lr_nll(validation_x_ones, validation_y, Theta_new)/validation_x.shape[0]
 
+        output = util.addones(test_x).dot(Theta_new) # ik weet niet of dit klopt?
+
         # visualize the training
         h1.set_ydata(loss)
         h2.set_ydata(validation_loss)
@@ -207,7 +210,8 @@ def nuclei_classification():
         Theta = np.array(Theta_new)
         Theta_new = None
         tmp = None
-
+        
+        
         #-----------------------------------------------------------------------------------------------------------------
         # Stop training if the validation loss has not decreased for 9 iterations
         if abs(validation_loss[k]-validation_loss[k-1]) < 0.001:
@@ -217,19 +221,25 @@ def nuclei_classification():
         if different == 9:
             break
         #-----------------------------------------------------------------------------------------------------------------
+        
 
+        # update the figure
         display(fig)
         clear_output(wait = True)
         plt.pause(.005)
-    error = abs(util.addones(test_x).dot(Theta) - test_y)/test_y.shape[0]*100
-    accuracy = 100-error.mean()
-    recall = calculate_recall(util.addones(test_x), test_y, Theta)
         
-    print('Error: ', error)
+    calculate_recall(util.addones(test_x), test_y, Theta)
+    # calculate_recall(output, test_y, Theta)
+    error = abs(util.addones(test_x)[k].dot(Theta) - test_y[k])/test_y.shape[0]
+    # error = abs(output - test_y).sum()/test_y.shape[0]
+    accuracy = (1-error)    
+    # print('Error: ', error)
     print('Accuracy: ', accuracy)
-    print('Recall: ', recall)
+
     ax2.set_xlim(0, k)
     display(fig)
+    return Theta, test_x, test_y, validation_x, validation_y, training_x, training_y, validation_loss, accuracy
+
 
 def calculate_recall(test_x_ones, test_y, Theta):
     """
@@ -244,12 +254,23 @@ def calculate_recall(test_x_ones, test_y, Theta):
         recall : The recall of the nuclei classification model (float)
     """
     predicted = np.round(test_x_ones.dot(Theta)) 
-    predicted = np.round(predicted >= 1).astype(int) # Round to 0 or 1
+    predicted = np.round(test_x_ones >= 1).astype(int) # Round to 0 or 1
+    print(predicted[:20])
     true = test_y
     tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
+    accuracy = (tp + tn) / (tp + tn + fp + fn) # Calculate accuracy
+    FPR = fp / (fp + tn) # Calculate false positive rate
+    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
+    Precision = tp / (tp + fp) # Calculate precision
+    F1 = 2 * (Precision * recall) / (Precision + recall) # Calculate F1 score
+
+    print('Accuracy: ', accuracy)
+    print('False Positive Rate: ', FPR)
+    print('Recall: ', recall)
+    print('Precision: ', Precision)
+    print('F1 Score: ', F1)
     
-    return recall
     
 
 def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
