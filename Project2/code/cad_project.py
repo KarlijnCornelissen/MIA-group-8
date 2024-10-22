@@ -179,7 +179,7 @@ def nuclei_classification():
     different = 0 # Variable to keep track of the number of times the validation loss has not decreased
     # accuracy = [] # List to store the accuracy of the model
     #-----------------------------------------------------------------------------------------------------------------
-
+    
     for k in np.arange(num_iterations):                  #for each training iteration
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
@@ -230,9 +230,9 @@ def nuclei_classification():
         
     calculate_recall(util.addones(test_x), test_y, Theta)
     # calculate_recall(output, test_y, Theta)
-    error = abs(util.addones(test_x)[k].dot(Theta) - test_y[k])/test_y.shape[0]
+    error = abs(util.addones(test_x).dot(Theta) - test_y)/test_y.shape[0]
     # error = abs(output - test_y).sum()/test_y.shape[0]
-    accuracy = (1-error)    
+    accuracy = 1-error.mean()   
     # print('Error: ', error)
     print('Accuracy: ', accuracy)
 
@@ -254,8 +254,7 @@ def calculate_recall(test_x_ones, test_y, Theta):
         recall : The recall of the nuclei classification model (float)
     """
     predicted = np.round(test_x_ones.dot(Theta)) 
-    predicted = np.round(test_x_ones >= 1).astype(int) # Round to 0 or 1
-    print(predicted[:20])
+    predicted = np.round(predicted >= 1).astype(int) # Round to 0 or 1
     true = test_y
     tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
     accuracy = (tp + tn) / (tp + tn + fp + fn) # Calculate accuracy
