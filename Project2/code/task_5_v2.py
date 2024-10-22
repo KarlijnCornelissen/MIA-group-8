@@ -17,7 +17,7 @@ def loading_data():
     - training_y: np.ndarray
         The labels for the training images (21910, 1).
     """
-    fn = '../data/nuclei_data.mat'
+    fn = '/Project2/data/nuclei_data.mat'
     mat = scipy.io.loadmat(fn)
     test_images = mat["test_images"]
     test_y = mat["test_y"]
@@ -41,7 +41,6 @@ def distance(x1, x2):
     """
     euclidean_distance = np.sqrt(np.sum((x1 - x2) ** 2))
     return euclidean_distance
-
 
 def choosing_k(X_train, y_train, X_test, test_y, lowest, highest):
     """
@@ -74,10 +73,8 @@ def choosing_k(X_train, y_train, X_test, test_y, lowest, highest):
 
     k_and_errors.sort(key=lambda x: x[1])
     best_k = k_and_errors[0][0]  # Return the k with the lowest error rate
-    print('THe chosen k is', best_k)
+    print('The chosen k is', best_k)
     return best_k
-
-
 
 def k_NN(X_train, y_train, X_test, k=None):
     """
@@ -138,7 +135,6 @@ def classify_by_k_NN(X_train, y_train, X_test, k=None):
         predicted_classes[i] = predicted_class
     return predicted_classes
 
-
 def pca(X):
     """
     Performs Principal Component Analysis (PCA) on the input data.
@@ -163,7 +159,6 @@ def pca(X):
     X_pca = U.dot(X_hat.T)
     return X_pca.T, U, s
 
-
 def comparison(X_train, y_train, X_test, test_y, k=None):
     """
     Compares the performance of k-NN with and without PCA.
@@ -177,18 +172,16 @@ def comparison(X_train, y_train, X_test, test_y, k=None):
     
     Output: Prints the accuracies with and without PCA.
     """
-
     predicted_classes_wo_pca = classify_by_k_NN(X_train, y_train, X_test, k=k)
     accuracy_wo_pca = calculate_error(predicted_classes_wo_pca, test_y)
     print(f"Accuracy without PCA: {accuracy_wo_pca}")
 
-
+    # Flatten the training and test images
     X_train_flat = X_train.reshape(X_train.shape[0], -1)
     X_test_flat = X_test.reshape(X_test.shape[0], -1)
 
     X_train_pca, _, _ = pca(X_train_flat)
     X_test_pca, _, _ = pca(X_test_flat)
-
 
     predicted_classes_pca = classify_by_k_NN(X_train_pca, y_train, X_test_pca, k=k)
     accuracy_with_pca = calculate_error(predicted_classes_pca, test_y)
@@ -199,23 +192,20 @@ def comparison(X_train, y_train, X_test, test_y, k=None):
     else:
         print("PCA does not improve k-NN performance.")
 
-
 def main():
     """
     Main function to run the k-NN comparison with and without PCA.
-    
     """
-
     test_images, test_y, training_images, training_y = loading_data()
 
+    # Flatten the training and test images before using them
     X_train_flat = training_images.reshape(training_images.shape[0], -1)
     X_test_flat = test_images.reshape(test_images.shape[0], -1)
 
     best_k = choosing_k(X_train_flat, training_y, X_test_flat, test_y, 1, 8)
     print(f"Best k chosen: {best_k}")
 
-
     comparison(training_images, training_y, test_images, test_y, best_k)
 
-
 main()
+
