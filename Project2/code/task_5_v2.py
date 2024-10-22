@@ -78,40 +78,41 @@ def choosing_k(X_train, y_train, X_test, test_y, lowest, highest):
     return best_k
 
 
+
 def k_NN(X_train, y_train, X_test, k=None):
     """
-  
-    Input:
-    - X_train: np.ndarray
-        The training data.
-    - y_train: np.ndarray
-        The labels for the training data.
-    - X_test: np.ndarray
-        The test data point.
-    - k: int
-        The number of nearest neighbors to consider.
-    
-    Output:
-    - predicted_class: int
-        The predicted class label for the test data point
-        
-        
-        Implements the k-NN algorithm to classify a test data point..
+    Input: 
+    - X_train: Training dataset (flattened if needed)
+    - y_train: Training labels
+    - X_test: Test image (flattened if needed)
+    - k: Number of nearest neighbors
+
+    Output: 
+    - predicted_class: Predicted category for the given test image
     """
     if k is None:
         raise ValueError("k must be provided. Use choosing_k to determine the best k.")
 
     all_distances = []
+    # Flatten X_test to ensure it's compatible with X_train
+    X_test_flat = X_test.flatten()  # Flatten test image
+    
     for i in range(len(X_train)):
-        dist = distance(X_train[i], X_test)
-        all_distances.append((dist, y_train[i]))
+        # Flatten the training image
+        X_train_flat = X_train[i].flatten()
+        
+        # Calculate distance between flattened images
+        dist = distance(X_train_flat, X_test_flat)
+        all_distances.append((dist, y_train[i]))  # Append a tuple with distance and label
 
+    # Sort by distance and get k nearest neighbors
     all_distances.sort(key=lambda x: x[0])
     neighbours = all_distances[:k]
+    
+    # Get the most frequent class among neighbors
     neighbour_classes = [neigh[1] for neigh in neighbours]
     predicted_class = max(set(neighbour_classes), key=neighbour_classes.count)
     return predicted_class
-
 
 def classify_by_k_NN(X_train, y_train, X_test, k=None):
     """
