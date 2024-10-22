@@ -370,3 +370,57 @@ def get_results_testset_Neural_Network(test_x,test_y,weights):
  
     return accuracy, FPR, FPR, recall, precision, F1, fn
 
+import numpy as np
+from sklearn.metrics import confusion_matrix
+
+def calculate_assessments_knn(X_test, y_test, X_train, y_train, k):
+    """
+    Calculate the performance metrics for a k-NN model.
+
+    Input:
+        X_test: The test images (numpy array) shape (n_samples, n_features)
+        y_test: The true labels for the test images (numpy array) shape (n_samples,)
+        X_train: The training images (numpy array) shape (n_samples, n_features)
+        y_train: The true labels for the training images (numpy array) shape (n_samples,)
+        k: The number of neighbors to use for k-NN
+
+    Output:
+        recall: The recall of the nuclei classification model (float)
+        accuracy: The accuracy of the model (float)
+        FPR: The false positive rate (float)
+        TPR: The true positive rate (float)
+        precision: The precision of the model (float)
+        F1: The F1 score, a harmonic mean of precision and recall (float)
+        fn: The false negatives
+    """
+    #Predict the labels using k-NN
+    predicted_classes = classify_by_k_NN(X_train, y_train, X_test, k=k)
+    predicted = np.array(list(predicted_classes.values()))
+
+    #Compute confusion matrix
+    tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
+
+    #Calculate metrics
+    accuracy = (tp + tn) / (tp + tn + fp + fn)  # Calculate accuracy
+    FPR = fp / (fp + tn) if (fp + tn) > 0 else 0  # Calculate false positive rate
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0  # Calculate recall
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0  # Calculate precision
+    F1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0  # Calculate F1 score
+
+    #Print metrics
+    print('Accuracy: ', accuracy)
+    print('False Positive Rate: ', FPR)
+    print('Recall: ', recall)
+    print('Precision: ', precision)
+    print('F1 Score: ', F1)
+    print("False Negatives: ", fn)
+
+    print('Accuracy: ', accuracy)
+    print('False Positive Rate: ', FPR)
+    print('Recall: ', recall)
+    print('Precision: ', precision)
+    print('F1 Score: ', F1)
+    print("false negatives: ", fn)
+ 
+    return accuracy, FPR, FPR, recall, precision, F1, fn
+

@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.io
-import cad_util as util  # Assuming you have a util module with the reshape_and_normalize function
+import cad_util as util 
+from cad_project import calculate_assessments_knn
 
 def loading_data():
     """
@@ -88,30 +89,38 @@ def k_NN(X_train, y_train, X_test, k=None):
     Output: 
     - predicted_class: Predicted category for the given test image
     """
+    #all_distances = []
+#   Flatten X_test to ensure it's compatible with X_train
+#   X_test_flat = X_test.flatten()  # Flatten test image
+    
+#    for i in range(len(X_train)):
+#        # Flatten the training image
+#        X_train_flat = X_train[i].flatten()
+#        
+#        # Calculate distance between flattened images
+#        dist = distance(X_train_flat, X_test_flat)
+#        all_distances.append((dist, y_train[i]))  # Append a tuple with distance and label
+#
+#    # Sort by distance and get k nearest neighbors
+#    all_distances.sort(key=lambda x: x[0])
+#    neighbours = all_distances[:k]
+#    
+#    # Get the most frequent class among neighbors
+#    neighbour_classes = [neigh[1].item() if isinstance(neigh[1], np.ndarray) else neigh[1] for neigh in neighbours]
+#    predicted_class = max(set(neighbour_classes), key=neighbour_classes.count)
+
+    #ensure it is flattened
+    y_train = y_train.flatten()
+    X_test = X_test.flatten()
     if k is None:
         raise ValueError("k must be provided. Use choosing_k to determine the best k.")
 
-    all_distances = []
-    # Flatten X_test to ensure it's compatible with X_train
-    X_test_flat = X_test.flatten()  # Flatten test image
-    
-    for i in range(len(X_train)):
-        # Flatten the training image
-        X_train_flat = X_train[i].flatten()
-        
-        # Calculate distance between flattened images
-        dist = distance(X_train_flat, X_test_flat)
-        all_distances.append((dist, y_train[i]))  # Append a tuple with distance and label
-
-    # Sort by distance and get k nearest neighbors
-    all_distances.sort(key=lambda x: x[0])
-    neighbours = all_distances[:k]
-    
-    # Get the most frequent class among neighbors
-    neighbour_classes = [neigh[1] for neigh in neighbours]
-    predicted_class = max(set(neighbour_classes), key=neighbour_classes.count)
+    distances = np.sqrt(np.sum((X_train-X_test)**2, axis=1))
+    k_indices = np.argsort(distances)[:k]
+    neighbour_classes = y_train[k_indices]
+    predicted_class = np.argmax(np.bincount(neighbour_classes.astype(int)))
     return predicted_class
-
+    
 def classify_by_k_NN(X_train, y_train, X_test, k=None):
     """
     Classifies all test data samples using k-NN.
@@ -212,3 +221,4 @@ def main():
     comparison(training_images, training_y, test_images, test_y, best_k)
 
 main()
+calculate_assessments_knn(X_test, y_test, X_train, y_train, k)

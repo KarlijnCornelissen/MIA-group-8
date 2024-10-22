@@ -24,7 +24,7 @@ def sigmoid(a):
 
 
 def lr_nll(X, Y, Theta):
-    # Computes the negative log-likelihood (NLL) loss for the logistic
+    # Computes the negative log-likelihood (NLL) loss for the logisticF
     # regression classifier.
     # Input:
     # X - the data matrix

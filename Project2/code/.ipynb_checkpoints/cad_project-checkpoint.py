@@ -181,9 +181,9 @@ def nuclei_classification():
     # initial values for the model parameters (Theta) that will result in
     # fast training of an accurate model for this classification problem are selected.
     
-    mu = 0.0001                 # waarschijnlijk te klein
-    batch_size = 30            # Batch size lijkt rond de 30 te zitten
-    num_iterations = 5000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
+    mu = 0.0001                 
+    batch_size = 30            
+    num_iterations = 5000       # Number of iterations for training big enough to reach convergence
     Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
     #-------------------------------------------------------------------#
     #The model is trained using the training dataset and validated using the validation dataset.
@@ -261,20 +261,12 @@ def nuclei_classification():
         # update the figure
         display(fig)
         clear_output(wait = True)
-        plt.pause(.005)
-        
-    calculate_assesments(util.addones(test_x), test_y, Theta)
-    # calculate_assesments(output, test_y, Theta)
-    error = abs(util.addones(test_x).dot(Theta) - test_y)/test_y.shape[0]
-    # error = abs(output - test_y).sum()/test_y.shape[0]
-    accuracy = 1-error.mean()   
-    # print('Error: ', error)
-    print('Accuracy: ', accuracy)
+        plt.pause(.005)  
+    calculate_assesments(util.addones(test_x), test_y, Theta) # calculate validation metrics
 
+    # Display the final loss values
     ax2.set_xlim(0, k)
     display(fig)
-    return Theta, test_x, test_y, validation_x, validation_y, training_x, training_y, validation_loss, accuracy
-
 
 def calculate_assesments(test_x_ones, test_y, Theta):
     """
@@ -303,24 +295,18 @@ def calculate_assesments(test_x_ones, test_y, Theta):
     tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
     accuracy = (tp + tn) / (tp + tn + fp + fn) # Calculate accuracy
     FPR = fp / (fp + tn) # Calculate false positive rate
-    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
     precision = tp / (tp + fp) # Calculate precision
     F1 = 2 * (precision * recall) / (precision + recall) # Calculate F1 score
 
     print('Accuracy: ', accuracy)
     print('False Positive Rate: ', FPR)
-    print('True Positive Rate: ', TPR)
     print('Recall: ', recall)
     print('Precision: ', precision)
     print('F1 Score: ', F1)
     print("false negatives: ", fn)
-    
-    return accuracy, FPR, TPR, recall, precision, F1, fn
-    
-    
 
-def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
+def get_model_parameters_lowest_validation_loss(validation_loss, weights_list, Acc):
     """
     Retrieve the model parameters and accuracy corresponding to the lowest validation loss.
 
@@ -366,23 +352,75 @@ def get_results_testset_Neural_Network(test_x,test_y,weights):
     output = util.sigmoid(np.dot(hidden, w2))
     output = np.round(output)
 
-    # test_accuracy = (test_y == output).sum()/(test_y.shape[0])        #komt hetzelfde uit als hieronder....
+    
     tn, fp, fn, tp = confusion_matrix(output, test_y).ravel()
     accuracy = (tp + tn) / (tp + tn + fp + fn)
     
     FPR = fp / (fp + tn) # Calculate false positive rate
-    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
     precision = tp / (tp + fp) # Calculate precision
     F1 = 2 * (precision * recall) / (precision + recall) # Calculate F1 score
 
     print('Accuracy: ', accuracy)
     print('False Positive Rate: ', FPR)
-    print('True Positive Rate: ', TPR)
     print('Recall: ', recall)
     print('Precision: ', precision)
     print('F1 Score: ', F1)
     print("false negatives: ", fn)
  
-    return accuracy, FPR, TPR, recall, precision, F1, fn
+    return accuracy, FPR, FPR, recall, precision, F1, fn
+
+import numpy as np
+from sklearn.metrics import confusion_matrix
+
+def calculate_assessments_knn(X_test, y_test, X_train, y_train, k):
+    """
+    Calculate the performance metrics for a k-NN model.
+
+    Input:
+        X_test: The test images (numpy array) shape (n_samples, n_features)
+        y_test: The true labels for the test images (numpy array) shape (n_samples,)
+        X_train: The training images (numpy array) shape (n_samples, n_features)
+        y_train: The true labels for the training images (numpy array) shape (n_samples,)
+        k: The number of neighbors to use for k-NN
+
+    Output:
+        recall: The recall of the nuclei classification model (float)
+        accuracy: The accuracy of the model (float)
+        FPR: The false positive rate (float)
+        TPR: The true positive rate (float)
+        precision: The precision of the model (float)
+        F1: The F1 score, a harmonic mean of precision and recall (float)
+        fn: The false negatives
+    """
+    #Predict the labels using k-NN
+    predicted_classes = classify_by_k_NN(X_train, y_train, X_test, k=k)
+    predicted = np.array(list(predicted_classes.values()))
+
+    #Compute confusion matrix
+    tn, fp, fn, tp = confusion_matrix(y_test, predicted).ravel()
+
+    #Calculate metrics
+    accuracy = (tp + tn) / (tp + tn + fp + fn)  # Calculate accuracy
+    FPR = fp / (fp + tn) if (fp + tn) > 0 else 0  # Calculate false positive rate
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0  # Calculate recall
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0  # Calculate precision
+    F1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0  # Calculate F1 score
+
+    #Print metrics
+    print('Accuracy: ', accuracy)
+    print('False Positive Rate: ', FPR)
+    print('Recall: ', recall)
+    print('Precision: ', precision)
+    print('F1 Score: ', F1)
+    print("False Negatives: ", fn)
+
+    print('Accuracy: ', accuracy)
+    print('False Positive Rate: ', FPR)
+    print('Recall: ', recall)
+    print('Precision: ', precision)
+    print('F1 Score: ', F1)
+    print("false negatives: ", fn)
+ 
+    return accuracy, FPR, FPR, recall, precision, F1, fn
 
