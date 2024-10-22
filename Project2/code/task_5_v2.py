@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.io
+import util  # Assuming you have a util module with the reshape_and_normalize function
 
 def loading_data():
     """
@@ -198,13 +199,8 @@ def main():
     """
     test_images, test_y, training_images, training_y = loading_data()
 
-    # Check shapes
-    print(f"Original shapes: training_images {training_images.shape}, test_images {test_images.shape}")
-
-    # Check if the training and test images have compatible shapes
-    if training_images.shape[1:] != test_images.shape[1:]:
-        # Reshape test images to match training images shape if they have compatible pixel sizes
-        test_images = np.resize(test_images, training_images.shape[1:])
+    # Use the reshape_and_normalize utility function to preprocess the images
+    training_images, validation_images, test_images = util.reshape_and_normalize(training_images, test_images, test_images)
 
     # Flatten the training and test images before using them
     X_train_flat = training_images.reshape(training_images.shape[0], -1)
@@ -216,4 +212,3 @@ def main():
     comparison(training_images, training_y, test_images, test_y, best_k)
 
 main()
-
