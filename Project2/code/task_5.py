@@ -3,7 +3,7 @@ import scipy.io
 
 
 
-def loading_data(k):
+def loading_data():
     #loading training and testing data
     fn = '../data/nuclei_data.mat'
     mat = scipy.io.loadmat(fn)
@@ -11,7 +11,7 @@ def loading_data(k):
     test_y = mat["test_y"] # shape (20730, 1)
     training_images = mat["training_images"] # shape (24, 24, 3, 21910)
     training_y = mat["training_y"] # shape (21910, 1)
-
+    return test_images,test_y,training_images,training_y
 
     #k means clustering:
 def distance(x1,x2):
@@ -29,9 +29,9 @@ def k_NN(X_train, y_train, X_test, k=3):
     Output:  A list of 
     """
     all_distances=[]
-    for i in in range(len(X_train)):
+    for i in range(len(X_train)):
         distance=distance(X_train[i],X_test)
-        all_distances.append((distance,y_train[i)]) #append a tuple
+        all_distances.append((distance,y_train[i])) #append a tuple
     all_distances.sort(key=lambda x: x[0])
     neighbours=all_distances[:k]    
     neighbour_classes=[]
@@ -47,7 +47,7 @@ def classify_by_k_NN(X_train,y_train,X_test,k=3):
         predicted_class = k_NN(X_train, y_train, X_test[i], k=k)
         predicted_classes[X_test[i]]=predicted_class
 
-     return predicted_classes
+    return predicted_classes
 
 def calculate_error(predicted_classes, y_test):
     """
@@ -93,7 +93,7 @@ def pca(X):
 
 def choosing_k(lowest,highest):
     k_and_errors=[]
-    for k in range(lowest,highest)
+    for k in range(lowest,highest):
         #run k NN and calculate error
         k_and_errors.append((k,error))
 
@@ -117,8 +117,18 @@ def comparison(X_train,y_train,X_test,test_y,k):
     accuracy_with_pca = calculate_error(predicted_classes_pca, test_y)
     print(f"Accuracy with PCA: {accuracy_with_pca}")
 
-    # Step 5: Compare the results
+   
     if accuracy_with_pca > accuracy_wo_pca:
         print("PCA improves k-NN performance.")
     else:
         print("PCA does not improve k-NN performance.")
+
+
+
+def main():
+    test_images, test_y, training_images, training_y = loading_data()
+    k = 5
+
+    comparison(training_images, training_y, test_images, test_y, k)
+
+main()
