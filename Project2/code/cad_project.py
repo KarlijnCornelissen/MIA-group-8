@@ -295,14 +295,12 @@ def calculate_assesments(test_x_ones, test_y, Theta):
     tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
     accuracy = (tp + tn) / (tp + tn + fp + fn) # Calculate accuracy
     FPR = fp / (fp + tn) # Calculate false positive rate
-    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
     precision = tp / (tp + fp) # Calculate precision
     F1 = 2 * (precision * recall) / (precision + recall) # Calculate F1 score
 
     print('Accuracy: ', accuracy)
     print('False Positive Rate: ', FPR)
-    print('True Positive Rate: ', TPR)
     print('Recall: ', recall)
     print('Precision: ', precision)
     print('F1 Score: ', F1)
@@ -359,14 +357,12 @@ def get_results_testset_Neural_Network(test_x,test_y,weights):
     accuracy = (tp + tn) / (tp + tn + fp + fn)
     
     FPR = fp / (fp + tn) # Calculate false positive rate
-    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
     precision = tp / (tp + fp) # Calculate precision
     F1 = 2 * (precision * recall) / (precision + recall) # Calculate F1 score
 
     print('Accuracy: ', accuracy)
     print('False Positive Rate: ', FPR)
-    print('True Positive Rate: ', TPR)
     print('Recall: ', recall)
     print('Precision: ', precision)
     print('F1 Score: ', F1)
