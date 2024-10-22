@@ -74,6 +74,7 @@ def choosing_k(X_train, y_train, X_test, test_y, lowest, highest):
 
     k_and_errors.sort(key=lambda x: x[1])
     best_k = k_and_errors[0][0]  # Return the k with the lowest error rate
+    print('THe chosen k is', best_k)
     return best_k
 
 
