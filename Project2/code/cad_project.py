@@ -15,7 +15,22 @@ from sklearn.metrics import confusion_matrix
 
 
 def nuclei_measurement():
+    """
+    Perform nuclei area measurement using linear regression and visualize the results.
+    
+    This function loads microscopy images of nuclei and their corresponding area labels.
+    It trains a linear regression model to predict the area of the nuclei from the image data.
+    The function visualizes the smallest and largest nuclei, compares the performanceof the linear regression model 
+    using the full dataset versus a reduced dataset by plotting the predicted area vs the area, and calculates the error of both models.
 
+    Input:
+        None. The function reads data from a .mat file located at '../data/nuclei_data.mat'.
+        
+    Output:
+        E_full : Root mean square error (RMSE) when training with the full dataset (float)
+        E_reduced : Root mean square error (RMSE) when training with the reduced dataset (float)
+    """
+    #read in the data and dataset preparation
     fn = '../data/nuclei_data.mat'
     mat = scipy.io.loadmat(fn)
     test_images = mat["test_images"] # shape (24, 24, 3, 20730)
@@ -50,9 +65,8 @@ def nuclei_measurement():
 
     ## training linear regression model
     #---------------------------------------------------------------------#
-    # TODO: Implement training of a linear regression model for measuring
-    # the area of nuclei in microscopy images. Then, use the trained model
-    # to predict the areas of the nuclei in the test dataset.
+    #Training of a linear regression model for measuring the area of nuclei in microscopy images. Then, use the trained model 
+    #to predict the areas of the nuclei in the test dataset.
     
     Theta = reg.ls_solve(training_x, training_y)[0]
     predicted_y = test_x.dot(Theta) 
@@ -69,15 +83,16 @@ def nuclei_measurement():
 
     #training with smaller number of training samples
     #---------------------------------------------------------------------#
-    # TODO: Train a model with reduced dataset size (e.g. every fourth
-    # training sample).
-    reduced_training_index = np.arange(0, training_images.shape[3], 4)
+    # Training a model with reduced dataset size: every fourth training sample.
+    reduced_training_index = np.arange(0, training_images.shape[3], 4) # Select every fourth sample from the training set
+    # Create reduced training set by selecting images and labels based on the reduced index
     reduced_training_images = training_images[:, :, :, reduced_training_index]
-    reduced_training_y = training_y[reduced_training_index]  # Shape (N/4, 1)?
+    reduced_training_y = training_y[reduced_training_index] 
+    # Determine the number of samples in the reduced training set
     num_reduced_samples = reduced_training_index.shape[0]
+    # Reshape the reduced training images to a 2D array where each row is a flattened image
     reduced_training_x = reduced_training_images.reshape(numFeatures, num_reduced_samples).T.astype(float)
-    ## ALS IEMAND HIER NOG NAAR KAN KIJKEN OM TE CHECKEN GRAAG##
-
+ 
     reduced_Theta = reg.ls_solve(reduced_training_x, reduced_training_y)[0]
     reduced_predicted_y = test_x.dot(reduced_Theta)
     #---------------------------------------------------------------------#
@@ -118,7 +133,29 @@ def reduce_data(training_images, training_y, percentage):
     return reduced_training_images, reduced_training_y
 
 def nuclei_classification():
-    ## dataset preparation
+    """
+    Perform nuclei classification using logistic regression and visualize the training progress.
+    
+    This function loads microscopy images of nuclei and their corresponding labels, and prepares
+    the data for classification. It trains a logistic regression model using gradient descent and 
+    visualizes the training loss and validation loss over iterations. The function stops training 
+    early if the validation loss does not decrease for a certain number of iterations.
+    
+    Input:
+        None. The function reads data from a .mat file located at '../data/nuclei_data_classification.mat'.
+        
+    Output:
+        Theta: The learned model parameter (numpy array)
+        test_x: The reshaped and normalized test images (numpy array)
+        test_y: The labels for the test images (numpy array)
+        validation_x: The validation set features, reshaped and normalized validation images (numpy array)
+        validation_y: The labels for the validation images (numpy array)
+        training_x: The reshaped and normalized training images (numpy array)
+        training_y: The labels for the training images (numpy array)
+        validation_loss: The array containing validation loss for each iteration (numpy array)
+        accuracy: The classification accuracy on the test set (float)
+    """
+    #read in the data and dataset preparation
     fn = '../data/nuclei_data_classification.mat'
     mat = scipy.io.loadmat(fn)
 
@@ -134,23 +171,22 @@ def nuclei_classification():
     # training_images, training_y = reduce_data(training_images, training_y, 0.5)
     #---------------------------------------------------------------------#
 
-    ## dataset preparation
+    
     training_x, validation_x, test_x = util.reshape_and_normalize(training_images, validation_images, test_images)      
     
     ## training linear regression model
     #-------------------------------------------------------------------#
-    # TODO: Select values for the learning rate (mu), batch size
+    # Values for the learning rate (mu), batch size
     # (batch_size) and number of iterations (num_iterations), as well as
     # initial values for the model parameters (Theta) that will result in
-    # fast training of an accurate model for this classification problem.
-    # Then, train the model using the training dataset and validate it
-    # using the validation dataset.
-    mu = 0.0001                 # waarschijnlijk te klein
-    batch_size = 30            # Batch size lijkt rond de 30 te zitten
-    num_iterations = 5000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
+    # fast training of an accurate model for this classification problem are selected.
+    
+    mu = 0.0001                 
+    batch_size = 30            
+    num_iterations = 5000       # Number of iterations for training big enough to reach convergence
     Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
-
     #-------------------------------------------------------------------#
+    #The model is trained using the training dataset and validated using the validation dataset.
 
     xx = np.arange(num_iterations)
     loss = np.empty(*xx.shape)
@@ -177,9 +213,8 @@ def nuclei_classification():
 
     #-----------------------------------------------------------------------------------------------------------------
     different = 0 # Variable to keep track of the number of times the validation loss has not decreased
-    # accuracy = [] # List to store the accuracy of the model
     #-----------------------------------------------------------------------------------------------------------------
-
+    
     for k in np.arange(num_iterations):                  #for each training iteration
         # pick a batch at random
         idx = np.random.randint(training_x.shape[0], size=batch_size)
@@ -226,54 +261,66 @@ def nuclei_classification():
         # update the figure
         display(fig)
         clear_output(wait = True)
-        plt.pause(.005)
-        
-    calculate_recall(util.addones(test_x), test_y, Theta)
-    # calculate_recall(output, test_y, Theta)
-    error = abs(util.addones(test_x)[k].dot(Theta) - test_y[k])/test_y.shape[0]
-    # error = abs(output - test_y).sum()/test_y.shape[0]
-    accuracy = (1-error)    
-    # print('Error: ', error)
-    print('Accuracy: ', accuracy)
+        plt.pause(.005)  
+    calculate_assesments(util.addones(test_x), test_y, Theta) # calculate validation metrics
 
+    # Display the final loss values
     ax2.set_xlim(0, k)
     display(fig)
-    return Theta, test_x, test_y, validation_x, validation_y, training_x, training_y, validation_loss, accuracy
 
-
-def calculate_recall(test_x_ones, test_y, Theta):
+def calculate_assesments(test_x_ones, test_y, Theta):
     """
     Calculate the recall of the nuclei classification model.
     
     Input:
-        test_x_ones : The test images (numpy array) stacked with ones shape (7303, 1729)
-        test_y : The true labels for the test images (numpy array) shape (7303, 1)
-        Theta : The trained model parameters (numpy array) shape (1729, 1)
+        test_x_ones: The test images (numpy array) stacked with ones shape (7303, 1729)
+        test_y: The true labels for the test images (numpy array) shape (7303, 1)
+        Theta: The trained model parameters (numpy array) shape (1729, 1)
         
     Output:
         recall : The recall of the nuclei classification model (float)
+        accuracy : The accuracy of the model (float)
+        FPR : The false positive rate (float)
+        TPR : The true positive rate (float)
+        precision : The precision of the model (float)
+        F1 : The F1 score, a harmonic mean of precision and recall (float)
+        fn: The false negatives
     """
+    # Predict the labels for the test set using the learned model parameters (Theta)
     predicted = np.round(test_x_ones.dot(Theta)) 
-    predicted = np.round(test_x_ones >= 1).astype(int) # Round to 0 or 1
-    print(predicted[:20])
+    # Ensure the predicted values are binary (0 or 1) based on a threshold of 1
+    predicted = np.round(predicted >= 1).astype(int) # Round to 0 or 1
+    # True labels from the test set
     true = test_y
     tn, fp, fn, tp = confusion_matrix(predicted, true).ravel() # Calculate confusion matrix
     accuracy = (tp + tn) / (tp + tn + fp + fn) # Calculate accuracy
     FPR = fp / (fp + tn) # Calculate false positive rate
-    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
-    Precision = tp / (tp + fp) # Calculate precision
-    F1 = 2 * (Precision * recall) / (Precision + recall) # Calculate F1 score
+    precision = tp / (tp + fp) # Calculate precision
+    F1 = 2 * (precision * recall) / (precision + recall) # Calculate F1 score
 
     print('Accuracy: ', accuracy)
     print('False Positive Rate: ', FPR)
     print('Recall: ', recall)
-    print('Precision: ', Precision)
+    print('Precision: ', precision)
     print('F1 Score: ', F1)
-    
-    
+    print("false negatives: ", fn)
 
 def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
+    """
+    Retrieve the model parameters and accuracy corresponding to the lowest validation loss.
+
+    Input:
+        validation_x: The validation set features (numpy array)
+        validation_y: The true labels for the validation set (numpy array)
+        validation_loss: A list of validation loss values recorded during training (list)
+        weights_list: A list of model weights corresponding to each validation loss value (list)
+        Acc: A list of accuracy values corresponding to each validation loss value (list)
+        
+    Output:
+        weights: The model parameters (weights) that correspond to the lowest validation loss (numpy array)
+        Accuracy: The accuracy of the model associated with the lowest validation loss (float)
+    """
     i = validation_loss.index(min(validation_loss))
     Accuracy = Acc[i]
     weights = weights_list[i]
@@ -281,6 +328,23 @@ def get_model_parameters(validation_x, validation_y, validation_loss, weights_li
     return weights, Accuracy
 
 def get_results_testset_Neural_Network(test_x,test_y,weights):
+    """
+    Evaluate the performance of a neural network classifier on the test dataset.
+
+    Input:
+        weights: A dictionary containing model weights, including 'w1' (weights for the hidden layer) and 'w2' (weights for the output layer).
+        test_x: The test set features (numpy array)
+        test_y: The true labels for the test set (numpy array)
+    
+    Output:
+        recall: The recall of the nuclei classification model (float)
+        accuracy: The accuracy of the model (float)
+        FPR: The false positive rate (float)
+        TPR: The true positive rate (float)
+        precision: The precision of the model (float)
+        F1: The F1 score, a harmonic mean of precision and recall (float)
+        fn: The false negatives
+    """
     w1 = weights['w1']
     w2 = weights['w2']
 
@@ -293,16 +357,16 @@ def get_results_testset_Neural_Network(test_x,test_y,weights):
     accuracy = (tp + tn) / (tp + tn + fp + fn)
     
     FPR = fp / (fp + tn) # Calculate false positive rate
-    TPR = tp / (tp + fn) # Calculate true positive rate
     recall = tp / (tp + fn) # Calculate recall
-    Precision = tp / (tp + fp) # Calculate precision
-    F1 = 2 * (Precision * recall) / (Precision + recall) # Calculate F1 score
+    precision = tp / (tp + fp) # Calculate precision
+    F1 = 2 * (precision * recall) / (precision + recall) # Calculate F1 score
 
     print('Accuracy: ', accuracy)
     print('False Positive Rate: ', FPR)
     print('Recall: ', recall)
-    print('Precision: ', Precision)
+    print('Precision: ', precision)
     print('F1 Score: ', F1)
     print("false negatives: ", fn)
-    
+ 
+    return accuracy, FPR, TPR, recall, precision, F1, fn
 
