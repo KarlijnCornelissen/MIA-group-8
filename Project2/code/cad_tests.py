@@ -436,7 +436,7 @@ class Training:
             plt.savefig(f'{self.training_plot_N}.jpg')
             plt.show()
         print('> Training finished')
-        best_weights, Accuracy = get_model_parameters(self.validation_x, self.validation_y, validation_loss, weights_list, Acc)
+        best_weights, Accuracy = get_model_parameters_lowest_validation_loss(validation_loss, weights_list, Acc)
         return best_weights, Accuracy
             
     def pass_on_test_set(self):

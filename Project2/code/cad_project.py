@@ -306,7 +306,7 @@ def calculate_assesments(test_x_ones, test_y, Theta):
     print('F1 Score: ', F1)
     print("false negatives: ", fn)
 
-def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
+def get_model_parameters_lowest_validation_loss(validation_loss, weights_list, Acc):
     """
     Retrieve the model parameters and accuracy corresponding to the lowest validation loss.
 
@@ -352,7 +352,7 @@ def get_results_testset_Neural_Network(test_x,test_y,weights):
     output = util.sigmoid(np.dot(hidden, w2))
     output = np.round(output)
 
-    # test_accuracy = (test_y == output).sum()/(test_y.shape[0])        #komt hetzelfde uit als hieronder....
+    
     tn, fp, fn, tp = confusion_matrix(output, test_y).ravel()
     accuracy = (tp + tn) / (tp + tn + fp + fn)
     
@@ -368,5 +368,5 @@ def get_results_testset_Neural_Network(test_x,test_y,weights):
     print('F1 Score: ', F1)
     print("false negatives: ", fn)
  
-    return accuracy, FPR, TPR, recall, precision, F1, fn
+    return accuracy, FPR, FPR, recall, precision, F1, fn
 
