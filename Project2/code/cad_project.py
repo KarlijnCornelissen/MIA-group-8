@@ -181,9 +181,9 @@ def nuclei_classification():
     # initial values for the model parameters (Theta) that will result in
     # fast training of an accurate model for this classification problem are selected.
     
-    mu = 0.0001                 # waarschijnlijk te klein
-    batch_size = 30            # Batch size lijkt rond de 30 te zitten
-    num_iterations = 5000       # loss is nu NAN voor eerste 150 iteraties, validation loss is de hele tijd NAN
+    mu = 0.0001                 
+    batch_size = 30            
+    num_iterations = 5000       # Number of iterations for training big enough to reach convergence
     Theta = 0.02*np.random.rand(training_x.shape[1]+1, 1) # Shape (1729, 1)
     #-------------------------------------------------------------------#
     #The model is trained using the training dataset and validated using the validation dataset.
@@ -261,20 +261,12 @@ def nuclei_classification():
         # update the figure
         display(fig)
         clear_output(wait = True)
-        plt.pause(.005)
-        
-    calculate_assesments(util.addones(test_x), test_y, Theta)
-    # calculate_assesments(output, test_y, Theta)
-    error = abs(util.addones(test_x).dot(Theta) - test_y)/test_y.shape[0]
-    # error = abs(output - test_y).sum()/test_y.shape[0]
-    accuracy = 1-error.mean()   
-    # print('Error: ', error)
-    print('Accuracy: ', accuracy)
+        plt.pause(.005)  
+    calculate_assesments(util.addones(test_x), test_y, Theta) # calculate validation metrics
 
+    # Display the final loss values
     ax2.set_xlim(0, k)
     display(fig)
-    return Theta, test_x, test_y, validation_x, validation_y, training_x, training_y, validation_loss, accuracy
-
 
 def calculate_assesments(test_x_ones, test_y, Theta):
     """
@@ -315,10 +307,6 @@ def calculate_assesments(test_x_ones, test_y, Theta):
     print('Precision: ', precision)
     print('F1 Score: ', F1)
     print("false negatives: ", fn)
-    
-    return accuracy, FPR, TPR, recall, precision, F1, fn
-    
-    
 
 def get_model_parameters(validation_x, validation_y, validation_loss, weights_list, Acc):
     """
