@@ -17,7 +17,7 @@ def loading_data():
     - training_y: np.ndarray
         The labels for the training images (21910, 1).
     """
-    fn = '/Project2/data/nuclei_data.mat'
+    fn = './Project2/data/nuclei_data.mat'
     mat = scipy.io.loadmat(fn)
     test_images = mat["test_images"]
     test_y = mat["test_y"]
